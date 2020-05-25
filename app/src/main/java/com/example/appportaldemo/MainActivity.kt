@@ -78,13 +78,15 @@ class MainActivity : AppCompatActivity() {
 
     fun xxx() {
 
-//        ajustaSensores()
+        ajustaSensores(false)
+        ajustaBalancas(false)
 
         btn_door_in.setBackgroundResource(R.drawable.door_red)
         btn_door_out.setBackgroundResource(R.drawable.door_red)
         btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
         btn_alcohol_dispenser.setBackgroundResource(R.drawable.devices)
         btn_money.setBackgroundResource(R.drawable.dindin_futuro)
+
         temperatura_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 temp = 35F + ((progress * 5F) / 100F)
@@ -213,13 +215,13 @@ class MainActivity : AppCompatActivity() {
         btn_sensor2.setBackgroundResource(R.drawable.sensor_sem_gente)
         btn_sensor3.setBackgroundResource(R.drawable.sensor_sem_gente)
 
-        if ( CleaningMachine.sensor1Status < Config.sensor1DistanciaDetecta ) {
+        if ( CleaningMachine.pessoaEmSensor(Sensor.PRESENCA) ) {
             btn_sensor1.setBackgroundResource(R.drawable.sensor_com_gente)
         }
-        if ( CleaningMachine.sensor2Status < Config.sensor2DistanciaDetecta) {
+        if ( CleaningMachine.pessoaEmSensor(Sensor.ENTRADA) ) {
             btn_sensor2.setBackgroundResource(R.drawable.sensor_com_gente)
         }
-        if ( CleaningMachine.sensor3Status < Config.sensor3DistanciaDetecta ) {
+        if ( CleaningMachine.pessoaEmSensor(Sensor.SAIDA) ) {
             btn_sensor3.setBackgroundResource(R.drawable.sensor_com_gente)
         }
 
@@ -285,7 +287,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 if ( CleaningMachine.startStateMachine() ) {
                     btnStateMachine.text = getString(R.string.stopStateMachine)
-                    CleaningMachine.startStateMachine()
                     isStatMachineRunning = true
                 } else {
                     Toast.makeText(this, "Offline", Toast.LENGTH_LONG).show()

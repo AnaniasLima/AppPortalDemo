@@ -33,13 +33,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_end="60dp" />
+        app:layout_constraintGuide_end="150dp" />
 
 
     // Primeira linha --------------------------------------
 
-    <LinearLayout
-        android:id="@+id/topArea1"
+    <LinearLayout android:id="@+id/topArea1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -47,31 +46,24 @@
         android:background="@color/colorTopArea1"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnDemoOn"
+        <Button android:id="@+id/btnDemoOn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="@string/demoOn" />
 
-        <Button
-            android:id="@+id/btnStatusRequest"
+        <Button android:id="@+id/btnStatusRequest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="@string/statusRequest" />
-
-
     </LinearLayout>
-
-
 
     // Segunda linha --------------------------------------
 
-    <LinearLayout
-        android:id="@+id/topArea2"
+    <LinearLayout android:id="@+id/topArea2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="@+id/gl_top1"
@@ -81,38 +73,30 @@
         android:background="@color/colorTopArea2"
         android:orientation="horizontal">
 
-
-        <Button
-            android:id="@+id/btnLogTag"
+        <Button android:id="@+id/btnLogTag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="@string/tag" />
 
-        <Button
-            android:id="@+id/btnLogClear"
+        <Button android:id="@+id/btnLogClear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="@string/clear" />
 
-
-        <Button
-            android:id="@+id/btnStateMachine"
+        <Button android:id="@+id/btnStateMachine"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="@string/startStateMachine" />
 
-
     </LinearLayout>
 
-
-    <Spinner
-        android:id="@+id/spinnerMachine"
+    <Spinner android:id="@+id/spinnerMachine"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:textAlignment="center"
@@ -121,11 +105,9 @@
         app:layout_constraintBottom_toTopOf="@+id/gl_top2"
         />
 
-
     // Parte central --------------------------------------
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/log_recycler_view"
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/log_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/colorTextLog"
@@ -134,8 +116,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_top2" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/history_recycler_view"
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/history_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/colorTextHistory"
@@ -144,9 +125,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_top2" />
 
-
-    <VideoView
-        android:id="@+id/video_view"
+    <VideoView android:id="@+id/video_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
@@ -155,28 +134,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_top2" />
 
-
-
-    <Button
-        android:id="@+id/btnInvisivel"
-        android:text=""
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <Button android:id="@+id/btn_modo_waiting_person"
+        android:text="AGUARDANDO PESSOA"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:visibility="invisible"
+        android:background="@color/white"
+        android:textColor="@color/blue"
+        android:textSize="60dp"
+        app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/gl_right"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gl_top2" />
+
+    <Button android:id="@+id/btnInvisivel"
+        android:text=""
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/gl_right"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gl_top2"
         android:background="?android:selectableItemBackground"/>
 
     // Rodape --------------------------------------
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_end="150dp" />
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/sensores_layout"
+    <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/sensores_layout"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:background="#3296FA"
@@ -184,8 +169,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/gl_bottom">
 
-        <TextView
-            android:id="@+id/tv_sensor1"
+        <TextView android:id="@+id/tv_sensor1"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:gravity="center"
@@ -194,18 +178,16 @@
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        <Button
-            android:id="@+id/btn_sensor1"
+        <Button android:id="@+id/btn_sensor1"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor1"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor1"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/sensor_com_gente" />
 
         <!--  ============================================================ -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/temperatura_layout"
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/temperatura_layout"
             android:layout_width="100dp"
             android:layout_height="0dp"
             android:visibility="invisible"
@@ -213,8 +195,7 @@
             app:layout_constraintStart_toEndOf="@+id/tv_sensor1"
             android:background="@android:color/holo_blue_light">
 
-            <TextView
-                android:id="@+id/temperatura_valor"
+            <TextView android:id="@+id/temperatura_valor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
@@ -226,8 +207,7 @@
                 app:layout_constraintStart_toStartOf="@+id/temperatura_seekBar"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <SeekBar
-                android:id="@+id/temperatura_seekBar"
+            <SeekBar android:id="@+id/temperatura_seekBar"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:rotation="270"
@@ -236,8 +216,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/temperatura_valor"/>
 
-            <TextView
-                android:id="@+id/temperatura_titulo"
+            <TextView android:id="@+id/temperatura_titulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Temp"
@@ -250,8 +229,7 @@
 
 
         <!--  ============================================================ -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/alcohol_dispenser"
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/alcohol_dispenser"
             android:layout_width="100dp"
             android:layout_height="0dp"
             android:visibility="visible"
@@ -259,8 +237,7 @@
             app:layout_constraintStart_toEndOf="@+id/tv_sensor1"
             android:background="#3296FA">
 
-            <TextView
-                android:id="@+id/tv_alcohol_dispenser"
+            <TextView android:id="@+id/tv_alcohol_dispenser"
                 android:layout_width="100dp"
                 android:layout_height="50dp"
                 android:gravity="center"
@@ -270,31 +247,28 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
-                android:id="@+id/btn_alcohol_dispenser"
+            <Button android:id="@+id/btn_alcohol_dispenser"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:background="@color/white"
                 app:layout_constraintStart_toStartOf="@+id/tv_alcohol_dispenser"
                 app:layout_constraintTop_toBottomOf="@+id/tv_alcohol_dispenser"
-                app:srcCompat="@drawable/sensor_usom_black" />
+                app:srcCompat="@drawable/devices" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <Button
-            android:id="@+id/btn_door_in"
+        <Button android:id="@+id/btn_door_in"
             android:layout_width="15dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toEndOf="@+id/temperatura_layout"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor1"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/door_red" />
 
 
-        <TextView
-            android:id="@+id/tv_sensor2"
+        <TextView android:id="@+id/tv_sensor2"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:gravity="center"
@@ -304,18 +278,16 @@
             app:layout_constraintStart_toEndOf="@+id/btn_door_in"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/btn_sensor2"
+        <Button android:id="@+id/btn_sensor2"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor2"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor2"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/sensor_com_gente" />
 
 
-        <TextView
-            android:id="@+id/tv_cleaning_area"
+        <TextView android:id="@+id/tv_cleaning_area"
             android:layout_width="200dp"
             android:layout_height="50dp"
             android:gravity="center"
@@ -325,18 +297,14 @@
             app:layout_constraintStart_toEndOf="@+id/tv_sensor2"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/btn_cleaning_area"
+        <Button android:id="@+id/btn_cleaning_area"
             android:layout_width="200dp"
             android:layout_height="100dp"
             app:layout_constraintStart_toStartOf="@+id/tv_cleaning_area"
             app:layout_constraintTop_toBottomOf="@+id/tv_cleaning_area"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/cleaning_area_off" />
 
-
-
-        <TextView
-            android:id="@+id/tv_sensor3"
+        <TextView android:id="@+id/tv_sensor3"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:gravity="center"
@@ -346,33 +314,29 @@
             app:layout_constraintStart_toEndOf="@+id/tv_cleaning_area"
             app:layout_constraintTop_toTopOf="parent" />
 
-
-        <Button
-            android:id="@+id/btn_sensor3"
+        <Button android:id="@+id/btn_sensor3"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor3"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/sensor_com_gente" />
 
-        <Button
-            android:id="@+id/btn_door_out"
+        <Button android:id="@+id/btn_door_out"
             android:layout_width="15dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toEndOf="@+id/tv_sensor3"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/door_red" />
 
-        <Button
-            android:id="@+id/btn_money"
+        <Button android:id="@+id/btn_money"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@color/white"
             app:layout_constraintStart_toEndOf="@+id/btn_door_out"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
-            app:srcCompat="@drawable/sensor_usom_black" />
+            app:srcCompat="@drawable/dindin" />
 
 
 
@@ -380,8 +344,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <LinearLayout
-        android:id="@+id/ll_balancas"
+    <LinearLayout android:id="@+id/ll_balancas"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:orientation="horizontal"
@@ -391,8 +354,7 @@
         app:layout_constraintStart_toEndOf="@+id/sensores_layout">
 
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/alcohol_layout"
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/alcohol_layout"
             android:layout_width="170dp"
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
@@ -436,8 +398,7 @@
 
         <!--  ============================================================ -->
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/desinfectante_layout"
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/desinfectante_layout"
             android:layout_width="170dp"
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
@@ -481,8 +442,7 @@
 
         <!--  ============================================================ -->
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/desinfectante_pe_layout"
+        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/desinfectante_pe_layout"
             android:layout_width="170dp"
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
@@ -528,8 +488,7 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnStartVideo"
+    <Button android:id="@+id/btnStartVideo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -538,8 +497,7 @@
         app:layout_constraintStart_toEndOf="@+id/ll_balancas"
         app:layout_constraintTop_toTopOf="@+id/gl_bottom" />
 
-    <Button
-        android:id="@+id/btnStopVideo"
+    <Button android:id="@+id/btnStopVideo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -549,8 +507,7 @@
         app:layout_constraintTop_toTopOf="@+id/gl_bottom" />
 
 
-    <Button
-        android:id="@+id/btn_runningDemo"
+    <Button android:id="@+id/btn_runningDemo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/colorButtonRunningDemo"
@@ -566,8 +523,7 @@
 
     // Outros --------------------------------------
 
-    <Button
-        android:id="@+id/buttonErro"
+    <Button android:id="@+id/buttonErro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/colorAccent"

@@ -3,6 +3,7 @@ package com.example.appportaldemo
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
@@ -37,6 +38,12 @@ enum class CleaningMachineCommand  {
     STATUS_RQ,
     FW_PLAY,
     FW_DEMO;
+}
+
+enum class Sensor  {
+    PRESENCA,
+    ENTRADA,
+    SAIDA;
 }
 
 @SuppressLint("StaticFieldLeak")
@@ -76,6 +83,15 @@ object CleaningMachine {
     var balanca2Status = 0
     var balanca3Status = 0
 
+    fun pessoaEmSensor(sensor : Sensor) : Boolean {
+        when(sensor) {
+            Sensor.PRESENCA -> if ( sensor1Status < Config.sensor1DistanciaDetecta ) return true
+            Sensor.ENTRADA ->  if ( sensor2Status < Config.sensor2DistanciaDetecta ) return true
+            Sensor.SAIDA ->  if ( sensor2Status < Config.sensor2DistanciaDetecta ) return true
+        }
+        return false
+    }
+
     fun start(activity: AppCompatActivity, context: Context) {
         mainActivity = activity
         appContext = context
@@ -113,6 +129,8 @@ object CleaningMachine {
         if ( ConnectThread.isConnected ) {
             stateMachineRunning = true
             desiredState = CleaningMachineState.RESTART
+            Timber.e("setei desiredState = ${desiredState} em startStateMachine")
+
             machineChecking(WAIT_TIME_TO_RESPONSE)
             return true
         } else {
@@ -128,6 +146,7 @@ object CleaningMachine {
     fun startRunDemo(): Long {
         countCommandsToDesiredState = 0
         desiredState = CleaningMachineState.RUNNING_DEMO
+        Timber.e("setei desiredState = ${desiredState} em startRunDemo")
 
         machineChecking(WAIT_TIME_TO_RESPONSE)
 
@@ -209,20 +228,43 @@ object CleaningMachine {
             ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
 
             mainActivity?.runOnUiThread {
-                WaitingMode.enterWaitingMode()
-                (mainActivity as MainActivity).btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
-                (mainActivity as MainActivity).btn_sensor1.isEnabled = true
+                (mainActivity as MainActivity).btn_modo_waiting_person.visibility = View.VISIBLE
+                (mainActivity as MainActivity).btn_modo_waiting_person.isEnabled = true
             }
+
+//            mainActivity?.runOnUiThread {
+//                WaitingMode.enterWaitingMode()
+//                (mainActivity as MainActivity).btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
+//                (mainActivity as MainActivity).btn_sensor1.isEnabled = true
+//            }
 
         } else {
             ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.OFF)
-
             mainActivity?.runOnUiThread {
-                WaitingMode.enterWaitingMode()
-                (mainActivity as MainActivity).btn_sensor1.setBackgroundResource(R.drawable.sensor_usom_inativo)
-                (mainActivity as MainActivity).btn_sensor1.isEnabled = true
+                (mainActivity as MainActivity).btn_modo_waiting_person.visibility = View.INVISIBLE
+                (mainActivity as MainActivity).btn_modo_waiting_person.isEnabled = false
             }
+        }
 
+    }
+
+    fun on_WAITING_THERMOMETER(flag : InOut) {
+
+        if ( flag == InOut.IN ) {
+            mainActivity?.runOnUiThread {
+                (mainActivity as MainActivity).temperatura_layout.visibility = View.VISIBLE
+                (mainActivity as MainActivity).temperatura_seekBar.isEnabled = true
+
+                (mainActivity as MainActivity).alcohol_dispenser.visibility = View.INVISIBLE
+
+
+                WaitingMode.enterWaitingMode()
+            }
+        } else {
+            mainActivity?.runOnUiThread {
+                (mainActivity as MainActivity).temperatura_layout.visibility = View.INVISIBLE
+                (mainActivity as MainActivity).alcohol_dispenser.visibility = View.VISIBLE
+            }
         }
 
     }
@@ -240,6 +282,12 @@ object CleaningMachine {
             when (receivedState ) {
                 CleaningMachineState.UNKNOW -> {}
                 CleaningMachineState.RESTART -> { }
+                CleaningMachineState.WAITING_PERSON -> {
+                    on_WAITING_PERSON(InOut.OUT)
+                }
+                CleaningMachineState.WAITING_THERMOMETER -> {
+                    on_WAITING_THERMOMETER(InOut.OUT)
+                }
             }
 
             receivedState = newState
@@ -252,9 +300,12 @@ object CleaningMachine {
                     ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
                 }
                 CleaningMachineState.WAITING_PERSON -> {
+                    desiredState = receivedState
                     on_WAITING_PERSON(InOut.IN)
                 }
                 CleaningMachineState.WAITING_THERMOMETER -> {
+                    desiredState = receivedState
+                    on_WAITING_THERMOMETER(InOut.IN)
                 }
             }
         }
@@ -267,10 +318,12 @@ object CleaningMachine {
         if (receivedState == desiredState) {
             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         } else {
+            Timber.i("desiredState = ${desiredState} em 1111 (${CleaningMachineState.RESTART}")
             when (desiredState) {
-
                 CleaningMachineState.RESTART -> {
-                    ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
+                    if (countCommandsToDesiredState++ == 0) {
+                        ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
+                    }
                 }
 
                 CleaningMachineState.RUNNING_DEMO -> {
@@ -280,6 +333,7 @@ object CleaningMachine {
                         // Não conseguimos entrar em modo demo, vamos desistir
                         countCommandsToDesiredState = 0
                         desiredState = CleaningMachineState.WAITING_PERSON
+                        Timber.e("setei desiredState = ${desiredState} em CleaningMachineState.RUNNING_DEMO")
                     }
                 }
 
@@ -306,6 +360,7 @@ object CleaningMachine {
 
             EventType.FW_RESTART -> {
                 changeCurrentState(CleaningMachineState.RESTART)
+                ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
             }
 
             EventType.FW_STATUS_RQ -> {
@@ -336,10 +391,13 @@ object CleaningMachine {
                     balanca2Status = response.b2
                     balanca3Status = response.b3
 
+                    Timber.e("estado de receivedState = ${receivedState} em processReceivedResponse")
+
                     when (receivedState) {
 
                         CleaningMachineState.UNKNOW-> {
                             desiredState = CleaningMachineState.RESTART
+                            Timber.e("setei desiredState = ${desiredState} em CleaningMachineState.UNKNOW")
                         }
 
                         CleaningMachineState.RESTART-> {
@@ -348,6 +406,9 @@ object CleaningMachine {
                         }
 
                         CleaningMachineState.WAITING_PERSON -> {
+                            if ( pessoaEmSensor(Sensor.PRESENCA) ) {
+                                changeCurrentState(CleaningMachineState.WAITING_THERMOMETER)
+                            }
                         }
 
                     }
