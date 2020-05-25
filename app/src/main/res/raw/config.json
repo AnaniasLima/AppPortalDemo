@@ -1,0 +1,57 @@
+{
+	"SERVER": {
+		"host": "http://vm.sger.com.br/",
+		"port": "1234",
+		"username": "ananias",
+		"password": "abc"
+	},
+
+	"SENSOR1_VALUE": 50,
+	"SENSOR2_VALUE": 50,
+	"SENSOR3_VALUE": 50,
+
+	"CREDIT_VALUE": 500,
+	"ALARM_TIME": 30,
+	"DEMO_TIME": 30,
+	"TRY_TIME": 40,
+	"SERIAL_SPEED": 115200,
+	"BILL_AUTOMATIC": 1,
+	"DURING_TRY_AUDIO": {
+		"filename": "A_Playing.mp3",
+		"volume": 99
+	},
+	"ON_LOSE_AUDIO": {
+		"filename": "A_Gameover.mp3",
+		"volume": 99
+	},
+	"ON_WIN_VIDEO": {
+		"filename": "V_Success.mp4",
+		"volume": 99
+	},
+	"ON_DEMO_VIDEO": [
+		{
+			"filename": "tomjerry.mp4",
+			"volume": 98
+		},
+		{
+			"filename": "penelope.mp4",
+			"volume": 97
+		},
+		{
+			"filename": "shazam.mp4",
+			"volume": 96
+		},
+		{
+			"filename": "pantera.mp4",
+			"volume": 95
+		}
+	],
+	"MONEY_VIDEO": {
+		"filename": "V_Money.mp4",
+		"volume": 99
+	},
+	"CARD_VIDEO": {
+		"filename": "V_Card.mp4",
+		"volume": 99
+	}
+}
