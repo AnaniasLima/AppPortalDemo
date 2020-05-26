@@ -10,48 +10,23 @@
 	"SENSOR2_VALUE": 50,
 	"SENSOR3_VALUE": 50,
 
-	"CREDIT_VALUE": 500,
-	"ALARM_TIME": 30,
-	"DEMO_TIME": 30,
-	"TRY_TIME": 40,
-	"SERIAL_SPEED": 115200,
-	"BILL_AUTOMATIC": 1,
-	"DURING_TRY_AUDIO": {
-		"filename": "A_Playing.mp3",
-		"volume": 99
-	},
-	"ON_LOSE_AUDIO": {
-		"filename": "A_Gameover.mp3",
-		"volume": 99
-	},
-	"ON_WIN_VIDEO": {
-		"filename": "V_Success.mp4",
-		"volume": 99
-	},
-	"ON_DEMO_VIDEO": [
-		{
-			"filename": "tomjerry.mp4",
-			"volume": 98
-		},
-		{
-			"filename": "penelope.mp4",
-			"volume": 97
-		},
-		{
-			"filename": "shazam.mp4",
-			"volume": 96
-		},
-		{
-			"filename": "pantera.mp4",
-			"volume": 95
-		}
+	"WAITING_VIDEO"          : [ { "volume": 99, "filename": "esperando_gente.mp4" } ],
+	"WELCOME_VIDEO"          : [
+		{ "volume": 99, "filename": "chegou_gente.mp4" },
+		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" }
 	],
-	"MONEY_VIDEO": {
-		"filename": "V_Money.mp4",
-		"volume": 99
-	},
-	"CARD_VIDEO": {
-		"filename": "V_Card.mp4",
-		"volume": 99
-	}
+	"THERMOMETER_INSTRUCTION": [ { "volume": 99, "filename": "instrucao_medir_temperatura.mp4"} ],
+	"ALCOHOL_INSTRUCTION"    : [ { "volume": 99, "filename": "instrucao_uso_alcool.mp4"} ],
+	"FEVER_INSTRUCTION"      : [ { "volume": 99, "filename": "instrucao_em_caso_febre.mp4"} ],
+	"ENTER_INSTRUCTION"      : [ { "volume": 99, "filename": "instrucao_entrar.mp4"} ],
+	
+	"ON_DEMO_VIDEO": [
+	
+		{ "volume": 99, "filename": "esperando_gente.mp4" },
+		{ "volume": 99, "filename": "chegou_gente.mp4" },
+		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" },
+		{ "volume": 99, "filename": "instrucao_uso_alcool.mp4" },
+		{ "volume": 99, "filename": "instrucao_em_caso_febre.mp4" },
+		{ "volume": 99, "filename": "instrucao_entrar.mp4" }
+	]
 }

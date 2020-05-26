@@ -55,12 +55,13 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-         val ins: InputStream = getResources().openRawResource(
-            getResources().getIdentifier("config","raw",getPackageName() ) )
+        val ins: InputStream = getResources().openRawResource(
+            getResources().getIdentifier("config", "raw", getPackageName())
+        )
 
 
         // TODO: Ajustar para edir permissao para usuário ao invez de habilitar permissao na mão
-        if ( ! Config.loadConfig(this, "config.json", ins) ) {
+        if (!Config.loadConfig(this, "config.json", ins)) {
             erroFatal(Config.msgErro)
         }
 
@@ -73,7 +74,20 @@ class MainActivity : AppCompatActivity() {
 
         xxx()
 
+//        for (tenta in 1..5) {
+//            if (CleaningMachine.startStateMachine()) {
+//                btnStateMachine.text = getString(R.string.stopStateMachine)
+//                isStatMachineRunning = true
+//                break
+//            } else {
+//                Thread.sleep(1000)
+//            }
+//        }
+
+
         setButtonListeners()
+
+
     }
 
     fun xxx() {
@@ -99,14 +113,8 @@ class MainActivity : AppCompatActivity() {
                 println("${progress.toString()} - ${String.format("%.2f", temp)}")
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                println("111")
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                println("2222")
-            }
-
+            override fun onStartTrackingTouch(seekBar: SeekBar?) { }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) { }
         })
 
 
@@ -175,27 +183,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    fun showRunningDemo(flag: Boolean)
-    {
-        if ( flag ) {
-            btn_runningDemo.setVisibility(View.VISIBLE)
-            btn_runningDemo.isClickable=true
-            btn_runningDemo.setOnClickListener {
-                Timber.i("Interrompendo demo")
-                CleaningMachine.stopRunDemo()
-                btn_runningDemo.setVisibility(View.INVISIBLE)
-                btn_runningDemo.isClickable=false
-            }
-        } else {
-            btn_runningDemo.setVisibility(View.INVISIBLE)
-            btn_runningDemo.isClickable=false
-        }
-    }
-
-
-
-
     fun insertSpinnerGameMachine() {
         spinnerMachine.adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1 , CleaningMachine.questionDelayList)
         CleaningMachine.setDelayForQuestion(spinnerMachine.selectedItem.toString())
@@ -251,23 +238,6 @@ class MainActivity : AppCompatActivity() {
         // --------------------------------------------------
         // Primeira Linha -----------------------------------
         // --------------------------------------------------
-
-        btnDemoOn.setOnClickListener {
-            if ( isStatMachineRunning ) {
-                CleaningMachine.startRunDemo()
-            } else {
-                ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.ON)
-            }
-        }
-
-        btnStatusRequest.setOnClickListener {
-            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-        }
-
-
-        // --------------------------------------------------
-        // Segunda Linha -----------------------------------
-        // --------------------------------------------------
         btnLogTag.setOnClickListener{
             ScreenLog.tag(LogType.TO_LOG)
         }
@@ -293,6 +263,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        btnStatusRequest.setOnClickListener {
+            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+        }
+
 
         // --------------------------------------------------
         // Rodape -----------------------------------
@@ -324,18 +299,6 @@ class MainActivity : AppCompatActivity() {
                 CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta - 10
             }
             ajustaSensores(true)
-        }
-
-
-        btnStartVideo.setOnClickListener  {
-            log_recycler_view.setVisibility(View.INVISIBLE)
-            log_recycler_view.setVisibility(View.GONE)
-            WaitingMode.enterWaitingMode()
-        }
-
-        btnStopVideo.setOnClickListener  {
-            WaitingMode.leaveWaitingMode()
-            log_recycler_view.setVisibility(View.VISIBLE)
         }
 
 

@@ -20,18 +20,7 @@ object WaitingMode {
     lateinit private var btnVideo: Button
     private var myActivity: AppCompatActivity? = null
 
-    var runDemoTimeoutHandler: Handler = Handler()
-    var runDemoTimeoutRunnable: Runnable = Runnable {
-        (myActivity as MainActivity).dealWithError(ErrorType.RUN_DEMO_TIMEOUT)
-    }
-
-    var runDemoHandler: Handler = Handler()
-    var runDemoRunnable: Runnable = Runnable {
-        ScreenLog.add(LogType.TO_HISTORY, "chamando startRunDemo()")
-        var timeout = CleaningMachine.startRunDemo()
-        runDemoTimeoutHandler.postDelayed(runDemoTimeoutRunnable, timeout)
-    }
-
+    lateinit var videosList: ArrayList<Media>
 
     fun start(mainActivity: AppCompatActivity, view: VideoView, btnInvisivel: Button) {
         myActivity = mainActivity
@@ -39,35 +28,18 @@ object WaitingMode {
         btnVideo = btnInvisivel
     }
 
-    fun enterWaitingMode() {
-        if (Config.videosDemo.isEmpty() ) {
-            (myActivity as MainActivity).dealWithError(ErrorType.INVALID_WAITING_MODE_VIDEOS)
-            return
-        }
-
-        // Tempo Minimo aceitável (em segundos) para executar uma demo
-        // TODO: ajustar depois de testar para 120
-        if ( Config.demoTime < 30 ) {
-            (myActivity as MainActivity).dealWithError(ErrorType.INVALID_WAITING_MODE_VIDEOS)
-            return
-        }
-
+    fun enterWaitingMode(fase : Int) {
         modoWaitingRunning = true
 
         releasePlayer()
         videoView.visibility = View.VISIBLE
         btnVideo.setVisibility(View.VISIBLE)
 
-        initPlayer()
-        initRunDemoTimer()
-
+        initPlayer(fase)
     }
 
     fun leaveWaitingMode() {
         releasePlayer()
-
-        cancelRunDemoTimeoutRunnable()
-        cancelRunDemoRunnable()
 
         videoView.visibility = View.GONE
         btnVideo.setVisibility(View.INVISIBLE)
@@ -77,19 +49,29 @@ object WaitingMode {
 
 
     private fun playNextVideo() {
-        if (++lastPlayedVideo == Config.videosDemo.size ) {
+        if (++lastPlayedVideo == videosList.size ) {
             lastPlayedVideo = 0
         }
-        Timber.i("WWW PLAYING NEXT VIDEO $lastPlayedVideo  Video:${Config.videosDemo[lastPlayedVideo]} Max:${Config.videosDemo.size}")
-        setVideoFilename(Config.videosDemo[lastPlayedVideo].filename)
+        Timber.i("WWW PLAYING NEXT VIDEO $lastPlayedVideo  Video:${videosList[lastPlayedVideo]} Max:${videosList.size}")
+        setVideoFilename(videosList[lastPlayedVideo].filename)
         videoView.start()
     }
 
 
-    private fun initPlayer() {
+    private fun initPlayer(fase:Int) {
         videoView.setVisibility(View.VISIBLE)
+
+        when (fase) {
+            1 -> videosList = Config.waitingVideo
+            2 -> videosList = Config.welcomeVideo
+            3 -> videosList = Config.thermometerVideo
+            4 -> videosList = Config.alcoholVideo
+            5 -> videosList = Config.feverVideo
+            6 -> videosList = Config.enterVideo
+        }
+
         lastPlayedVideo = 0
-        setVideoFilename(Config.videosDemo[lastPlayedVideo].filename)
+        setVideoFilename(videosList[lastPlayedVideo].filename)
         videoView.setOnCompletionListener {
             try {
                 playNextVideo()
@@ -99,6 +81,7 @@ object WaitingMode {
         }
         videoView.start()
     }
+
 
     private fun releasePlayer() {
         if ( videoView.isPlaying ) {
@@ -124,31 +107,30 @@ object WaitingMode {
     }
 
 
-    private fun initRunDemoTimer() {
-        cancelRunDemoRunnable()
-        cancelRunDemoTimeoutRunnable()
-
-        if ( modoWaitingRunning ) {
-            runDemoHandler.postDelayed(runDemoRunnable,Config.demoTime * 1000L )
-        }
-    }
-
-
-    fun onDemoFinishedEventReturn() {
-        initRunDemoTimer()
-    }
-
-    private fun cancelRunDemoRunnable() {
-        try {
-            runDemoHandler.removeCallbacks(runDemoRunnable)
-        } catch (e: Exception) {}
-    }
-
-    private fun cancelRunDemoTimeoutRunnable() {
-        try {
-            runDemoTimeoutHandler.removeCallbacks(runDemoTimeoutRunnable)
-        } catch (e: Exception) {}
-    }
+//    private fun initRunDemoTimer() {
+//        cancelRunDemoRunnable()
+//        cancelRunDemoTimeoutRunnable()
+//
+//        if ( modoWaitingRunning ) {
+//            runDemoHandler.postDelayed(runDemoRunnable, 10 * 60 * 1000 )
+//        }
+//    }
+//
+//    fun onDemoFinishedEventReturn() {
+//        initRunDemoTimer()
+//    }
+//
+//    private fun cancelRunDemoRunnable() {
+//        try {
+//            runDemoHandler.removeCallbacks(runDemoRunnable)
+//        } catch (e: Exception) {}
+//    }
+//
+//    private fun cancelRunDemoTimeoutRunnable() {
+//        try {
+//            runDemoTimeoutHandler.removeCallbacks(runDemoTimeoutRunnable)
+//        } catch (e: Exception) {}
+//    }
 
     // fw_demo (on)  Se ( Estado != FSM_IDLE ) retorna busy
     // fw_demo (on)  Se ( Estado == FSM_IDLE ) retorna: OK, fsm_state = RUNNING_DEMO

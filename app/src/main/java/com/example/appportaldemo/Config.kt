@@ -15,18 +15,15 @@ import java.nio.charset.Charset
 
 
 enum class ConfigType(val type: Int, val token: String) {
-    SERVER          (0, "SERVER"),
-    CREDIT_VALUE    (1, "CREDIT_VALUE"),
-    ALARM_TIME      (2, "ALARM_TIME"),
-    DEMO_TIME       (3, "DEMO_TIME"),
-    TRY_TIME        (4, "TRY_TIME"),
-    BILL_AUTOMATIC  (5, "BILL_AUTOMATIC"),
-    DURING_TRY_AUDIO(6, "DURING_TRY_AUDIO"),
-    ON_LOSE_AUDIO   (7, "ON_LOSE_AUDIO"),
-    ON_WIN_VIDEO    (8, "ON_WIN_VIDEO"),
-    ON_DEMO_VIDEO   (9, "ON_DEMO_VIDEO"),
-    MONEY_VIDEO     (10, "MONEY_VIDEO"),
-    CARD_VIDEO      (11, "CARD_VIDEO"),
+    SERVER                 (0, "SERVER"),
+    WAITING_VIDEO          (1, "WAITING_VIDEO"),
+    WELCOME_VIDEO          (2, "WELCOME_VIDEO"),
+    THERMOMETER_INSTRUCTION(3, "THERMOMETER_INSTRUCTION"),
+    ALCOHOL_INSTRUCTION    (4, "ALCOHOL_INSTRUCTION"),
+    FEVER_INSTRUCTION      (5, "FEVER_INSTRUCTION"),
+    ENTER_INSTRUCTION      (6, "ENTER_INSTRUCTION"),
+    ON_DEMO_VIDEO          (7, "ON_DEMO_VIDEO"),
+
     SENSOR1_VALUE   (12, "SENSOR1_VALUE"),
     SENSOR2_VALUE   (13, "SENSOR2_VALUE"),
     SENSOR3_VALUE   (14, "SENSOR3_VALUE");
@@ -38,20 +35,42 @@ object Config {
 
         var msgErro: String? = null
         var server: Server = Server("http://vm.sger.com.br/", 1234, "", "")
-        var creditValue: Int = 500
-        var alarmTime: Int = 30
-        var demoTime: Int = 120
-        var tryTime: Int = 40
-        var automaticBillAcceptor = 1
-        var audioTry: Media = Media("A_Playing.mp3", 99)
-        var audioLose: Media = Media("A_Gameover.mp3", 99)
-        var videoWin: Media = Media("V_Success.mp4", 99)
+
+
+        var waitingVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
+        var welcomeVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
+        var thermometerVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
+        var alcoholVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
+        var feverVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
+        var enterVideo: ArrayList<Media> = arrayListOf(
+            Media("V_Demo1.mp3", 99),
+            Media("V_Demo2.mp3", 99)
+        )
+
         var videosDemo: ArrayList<Media> = arrayListOf(
             Media("V_Demo1.mp3", 99),
             Media("V_Demo2.mp3", 99)
         )
-        var videoMoney: Media = Media("V_Money.mp4", 99)
-        var videoCard: Media = Media("V_Card.mp4", 99)
 
         var sensor1DistanciaDetecta: Int = 50
         var sensor2DistanciaDetecta: Int = 50
@@ -86,23 +105,17 @@ object Config {
             for (value in ConfigType.values()) {
                 curItem = value.token
                 when(value) {
-                    ConfigType.SERVER            -> server      = getServer(jsonObject.getJSONObject(value.token))
-                    ConfigType.CREDIT_VALUE      -> creditValue = jsonObject.getInt(value.token)
-                    ConfigType.ALARM_TIME        -> alarmTime   = jsonObject.getInt(value.token)
-                    ConfigType.DEMO_TIME         -> demoTime    = jsonObject.getInt(value.token)
-                    ConfigType.TRY_TIME          -> tryTime     = jsonObject.getInt(value.token)
-                    ConfigType.BILL_AUTOMATIC    -> automaticBillAcceptor   = jsonObject.getInt(value.token)
-                    ConfigType.ON_DEMO_VIDEO     -> videosDemo  = getDemoVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.DURING_TRY_AUDIO  -> audioTry    = getMedia(jsonObject.getJSONObject(value.token))
-                    ConfigType.ON_LOSE_AUDIO     -> audioLose   = getMedia(jsonObject.getJSONObject(value.token))
-                    ConfigType.ON_WIN_VIDEO      -> videoWin    = getMedia(jsonObject.getJSONObject(value.token))
-                    ConfigType.MONEY_VIDEO       -> videoMoney  = getMedia(jsonObject.getJSONObject(value.token))
-                    ConfigType.CARD_VIDEO        -> videoCard   = getMedia(jsonObject.getJSONObject(value.token))
-
-                    ConfigType.SENSOR1_VALUE     -> sensor1DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR2_VALUE     -> sensor2DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR3_VALUE     -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
-
+                    ConfigType.SERVER                  -> server      = getServer(jsonObject.getJSONObject(value.token))
+                    ConfigType.WAITING_VIDEO           -> waitingVideo     = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.WELCOME_VIDEO           -> welcomeVideo     = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.THERMOMETER_INSTRUCTION -> thermometerVideo = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.ALCOHOL_INSTRUCTION     -> alcoholVideo     = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.FEVER_INSTRUCTION       -> feverVideo       = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.ENTER_INSTRUCTION       -> enterVideo       = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.ON_DEMO_VIDEO           -> videosDemo       = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
                 }
             }
         } catch (e: Exception) {
@@ -120,28 +133,50 @@ object Config {
         for (value in ConfigType.values()) {
             when(value) {
                 ConfigType.SERVER            -> Timber.i("%-20s = %s", value.token, server.toString())
-                ConfigType.CREDIT_VALUE      -> Timber.i("%-20s = %d", value.token, creditValue)
-                ConfigType.ALARM_TIME        -> Timber.i("%-20s = %d", value.token, alarmTime)
-                ConfigType.DEMO_TIME         -> Timber.i("%-20s = %d", value.token, demoTime)
-                ConfigType.TRY_TIME          -> Timber.i("%-20s = %d", value.token, tryTime)
-                ConfigType.BILL_AUTOMATIC    -> Timber.i("%-20s = %d", value.token, automaticBillAcceptor)
+
+                ConfigType.WAITING_VIDEO     -> {
+                    waitingVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+
+                ConfigType.WELCOME_VIDEO     -> {
+                    welcomeVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+
+                ConfigType.THERMOMETER_INSTRUCTION     -> {
+                    thermometerVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+
+                ConfigType.ALCOHOL_INSTRUCTION     -> {
+                    alcoholVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+
+                ConfigType.FEVER_INSTRUCTION     -> {
+                    feverVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+                ConfigType.ENTER_INSTRUCTION     -> {
+                    enterVideo.forEach {
+                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
+                    }
+                }
+
                 ConfigType.ON_DEMO_VIDEO     -> {
                     videosDemo.forEach {
                         Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
                     }
                 }
-                ConfigType.DURING_TRY_AUDIO  -> Timber.i("%-20s Volume: %d File:[%s]", value.token, audioTry.volume, audioTry.filename)
-                ConfigType.ON_LOSE_AUDIO     -> Timber.i("%-20s Volume: %d File:[%s]", value.token, audioLose.volume, audioLose.filename)
-                ConfigType.ON_WIN_VIDEO      -> Timber.i("%-20s Volume: %d File:[%s]", value.token, videoWin.volume, videoWin.filename)
-                ConfigType.MONEY_VIDEO       -> Timber.i("%-20s Volume: %d File:[%s]", value.token, videoMoney.volume, videoMoney.filename)
-                ConfigType.CARD_VIDEO        -> Timber.i("%-20s Volume: %d File:[%s]", value.token, videoCard.volume, videoCard.filename)
-
                 ConfigType.SENSOR1_VALUE          -> Timber.i("%-20s = %d", value.token, sensor1DistanciaDetecta)
                 ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
                 ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
-
-
-
             }
         }
     }
@@ -178,7 +213,7 @@ object Config {
         )
     }
 
-    private fun getDemoVideos(jsonArray: JSONArray): ArrayList<Media> {
+    private fun getVideos(jsonArray: JSONArray): ArrayList<Media> {
         val medias = ArrayList<Media>()
         for ( x in 0 until jsonArray.length()) {
             medias.add( Media(

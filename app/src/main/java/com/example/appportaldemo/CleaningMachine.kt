@@ -24,7 +24,7 @@ enum class CleaningMachineState  {
     FINAL_INSTRUCTIONS,
     WAITING_FINISH,
 
-    RUNNING_DEMO,
+//    RUNNING_DEMO,
     PLAYING;
 }
 
@@ -142,26 +142,16 @@ object CleaningMachine {
         stateMachineRunning = false
     }
 
-
-    fun startRunDemo(): Long {
-        countCommandsToDesiredState = 0
-        desiredState = CleaningMachineState.RUNNING_DEMO
-        Timber.e("setei desiredState = ${desiredState} em startRunDemo")
-
-        machineChecking(WAIT_TIME_TO_RESPONSE)
-
-        return (MAX_RUN_DEMO_TIMEOUT)
-    }
-
-    fun isRunningDemo(): Boolean {
-        return (receivedState == CleaningMachineState.RUNNING_DEMO)
-    }
-
-    fun stopRunDemo() {
-        if (isRunningDemo()) {
-            ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.OFF)
-        }
-    }
+//
+//    fun isRunningDemo(): Boolean {
+//        return (receivedState == CleaningMachineState.RUNNING_DEMO)
+//    }
+//
+//    fun stopRunDemo() {
+//        if (isRunningDemo()) {
+//            ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.OFF)
+//        }
+//    }
 
 
     fun machineChecking(delay: Long) {
@@ -222,14 +212,29 @@ object CleaningMachine {
         erroFatal("Nao finalizou demo em ${MAX_RUN_DEMO_TIMEOUT}ms")
     }
 
+//    fun on_WAITING_PERSON(flag : InOut) {
+//        if ( flag == InOut.IN ) {
+//            mainActivity?.runOnUiThread {
+//                WaitingMode.enterWaitingMode(1)
+//            }
+//        } else {
+//            mainActivity?.runOnUiThread {
+//                WaitingMode.leaveWaitingMode()
+//            }
+//        }
+//
+//    }
+
+
     fun on_WAITING_PERSON(flag : InOut) {
 
         if ( flag == InOut.IN ) {
             ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
 
             mainActivity?.runOnUiThread {
-                (mainActivity as MainActivity).btn_modo_waiting_person.visibility = View.VISIBLE
-                (mainActivity as MainActivity).btn_modo_waiting_person.isEnabled = true
+//                (mainActivity as MainActivity).btn_modo_waiting_person.visibility = View.VISIBLE
+//                (mainActivity as MainActivity).btn_modo_waiting_person.isEnabled = true
+                WaitingMode.enterWaitingMode(1)
             }
 
 //            mainActivity?.runOnUiThread {
@@ -241,6 +246,9 @@ object CleaningMachine {
         } else {
             ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.OFF)
             mainActivity?.runOnUiThread {
+
+                WaitingMode.leaveWaitingMode()
+
                 (mainActivity as MainActivity).btn_modo_waiting_person.visibility = View.INVISIBLE
                 (mainActivity as MainActivity).btn_modo_waiting_person.isEnabled = false
             }
@@ -249,7 +257,6 @@ object CleaningMachine {
     }
 
     fun on_WAITING_THERMOMETER(flag : InOut) {
-
         if ( flag == InOut.IN ) {
             mainActivity?.runOnUiThread {
                 (mainActivity as MainActivity).temperatura_layout.visibility = View.VISIBLE
@@ -257,11 +264,12 @@ object CleaningMachine {
 
                 (mainActivity as MainActivity).alcohol_dispenser.visibility = View.INVISIBLE
 
-
-                WaitingMode.enterWaitingMode()
+                WaitingMode.enterWaitingMode(2)
             }
         } else {
             mainActivity?.runOnUiThread {
+                WaitingMode.leaveWaitingMode()
+
                 (mainActivity as MainActivity).temperatura_layout.visibility = View.INVISIBLE
                 (mainActivity as MainActivity).alcohol_dispenser.visibility = View.VISIBLE
             }
@@ -326,16 +334,16 @@ object CleaningMachine {
                     }
                 }
 
-                CleaningMachineState.RUNNING_DEMO -> {
-                    if (countCommandsToDesiredState++ < 2) {
-                        ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.ON)
-                    } else {
-                        // Não conseguimos entrar em modo demo, vamos desistir
-                        countCommandsToDesiredState = 0
-                        desiredState = CleaningMachineState.WAITING_PERSON
-                        Timber.e("setei desiredState = ${desiredState} em CleaningMachineState.RUNNING_DEMO")
-                    }
-                }
+//                CleaningMachineState.RUNNING_DEMO -> {
+//                    if (countCommandsToDesiredState++ < 2) {
+//                        ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.ON)
+//                    } else {
+//                        // Não conseguimos entrar em modo demo, vamos desistir
+//                        countCommandsToDesiredState = 0
+//                        desiredState = CleaningMachineState.WAITING_PERSON
+//                        Timber.e("setei desiredState = ${desiredState} em CleaningMachineState.RUNNING_DEMO")
+//                    }
+//                }
 
                 else -> {
                     println("ATENÇÃO: CCC Situação nao deveria ocorrer. Preciso reavaliara") // TODO: Verificar se vai ocorrer
