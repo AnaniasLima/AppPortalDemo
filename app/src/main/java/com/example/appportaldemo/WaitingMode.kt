@@ -10,6 +10,15 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
+enum class VideoFase {
+    WAITING_PEOPLE,
+    WELCOME,
+    HELP,
+    ALCOHOL,
+    FEVER,
+    ENTER
+}
+
 @SuppressLint("StaticFieldLeak")
 object WaitingMode {
     var modoWaitingRunning=false
@@ -28,7 +37,7 @@ object WaitingMode {
         btnVideo = btnInvisivel
     }
 
-    fun enterWaitingMode(fase : Int) {
+    fun enterWaitingMode(fase : VideoFase) {
         modoWaitingRunning = true
 
         releasePlayer()
@@ -58,16 +67,16 @@ object WaitingMode {
     }
 
 
-    private fun initPlayer(fase:Int) {
+    private fun initPlayer(fase: VideoFase) {
         videoView.setVisibility(View.VISIBLE)
 
         when (fase) {
-            1 -> videosList = Config.waitingVideo
-            2 -> videosList = Config.welcomeVideo
-            3 -> videosList = Config.thermometerVideo
-            4 -> videosList = Config.alcoholVideo
-            5 -> videosList = Config.feverVideo
-            6 -> videosList = Config.enterVideo
+            VideoFase.WAITING_PEOPLE -> videosList = Config.waitingVideo
+            VideoFase.WELCOME -> videosList = Config.welcomeVideo
+            VideoFase.HELP -> videosList = Config.helpVideo
+            VideoFase.ALCOHOL -> videosList = Config.alcoholVideo
+            VideoFase.FEVER -> videosList = Config.feverVideo
+            VideoFase.ENTER -> videosList = Config.enterVideo
         }
 
         lastPlayedVideo = 0

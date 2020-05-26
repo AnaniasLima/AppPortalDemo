@@ -110,13 +110,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_top1" />
 
-    <Button android:id="@+id/btn_modo_waiting_person"
-        android:text="AGUARDANDO PESSOA"
+    <Button android:id="@+id/btn_febre"
+        android:text="FEBRE"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="invisible"
-        android:background="@color/white"
+        android:textColor="@color/red"
+        android:gravity="center"
+        android:textSize="60dp"
+        app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
+        app:layout_constraintEnd_toStartOf="@+id/gl_right"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gl_top1"
+        android:background="?android:selectableItemBackground"/>
+    />
+
+    <Button android:id="@+id/btn_entrada_liberada"
+        android:text="ENTRADA LIBERADA"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
         android:textColor="@color/blue"
+        android:background="@color/white"
         android:textSize="60dp"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintEnd_toStartOf="@+id/gl_right"

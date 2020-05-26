@@ -18,7 +18,7 @@ enum class ConfigType(val type: Int, val token: String) {
     SERVER                 (0, "SERVER"),
     WAITING_VIDEO          (1, "WAITING_VIDEO"),
     WELCOME_VIDEO          (2, "WELCOME_VIDEO"),
-    THERMOMETER_INSTRUCTION(3, "THERMOMETER_INSTRUCTION"),
+    CALL_HELP              (3, "CALL_HELP"),
     ALCOHOL_INSTRUCTION    (4, "ALCOHOL_INSTRUCTION"),
     FEVER_INSTRUCTION      (5, "FEVER_INSTRUCTION"),
     ENTER_INSTRUCTION      (6, "ENTER_INSTRUCTION"),
@@ -26,7 +26,8 @@ enum class ConfigType(val type: Int, val token: String) {
 
     SENSOR1_VALUE   (12, "SENSOR1_VALUE"),
     SENSOR2_VALUE   (13, "SENSOR2_VALUE"),
-    SENSOR3_VALUE   (14, "SENSOR3_VALUE");
+    SENSOR3_VALUE   (14, "SENSOR3_VALUE"),
+    SENSOR4_VALUE   (15, "SENSOR4_VALUE");
 }
 
 
@@ -47,7 +48,7 @@ object Config {
             Media("V_Demo2.mp3", 99)
         )
 
-        var thermometerVideo: ArrayList<Media> = arrayListOf(
+        var helpVideo: ArrayList<Media> = arrayListOf(
             Media("V_Demo1.mp3", 99),
             Media("V_Demo2.mp3", 99)
         )
@@ -75,6 +76,7 @@ object Config {
         var sensor1DistanciaDetecta: Int = 50
         var sensor2DistanciaDetecta: Int = 50
         var sensor3DistanciaDetecta: Int = 50
+        var sensor4DistanciaDetecta: Int = 50
 
     init {
         Timber.e("===== =====  ==== Init 2222")
@@ -108,7 +110,7 @@ object Config {
                     ConfigType.SERVER                  -> server      = getServer(jsonObject.getJSONObject(value.token))
                     ConfigType.WAITING_VIDEO           -> waitingVideo     = getVideos(jsonObject.getJSONArray(value.token))
                     ConfigType.WELCOME_VIDEO           -> welcomeVideo     = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.THERMOMETER_INSTRUCTION -> thermometerVideo = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.CALL_HELP               -> helpVideo        = getVideos(jsonObject.getJSONArray(value.token))
                     ConfigType.ALCOHOL_INSTRUCTION     -> alcoholVideo     = getVideos(jsonObject.getJSONArray(value.token))
                     ConfigType.FEVER_INSTRUCTION       -> feverVideo       = getVideos(jsonObject.getJSONArray(value.token))
                     ConfigType.ENTER_INSTRUCTION       -> enterVideo       = getVideos(jsonObject.getJSONArray(value.token))
@@ -116,6 +118,7 @@ object Config {
                     ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta = jsonObject.getInt(value.token)
                     ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta = jsonObject.getInt(value.token)
                     ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta = jsonObject.getInt(value.token)
                 }
             }
         } catch (e: Exception) {
@@ -127,7 +130,6 @@ object Config {
         printConfig()
         return true
     }
-
 
     private fun printConfig() {
         for (value in ConfigType.values()) {
@@ -146,8 +148,8 @@ object Config {
                     }
                 }
 
-                ConfigType.THERMOMETER_INSTRUCTION     -> {
-                    thermometerVideo.forEach {
+                ConfigType.CALL_HELP     -> {
+                    helpVideo.forEach {
                         Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
                     }
                 }
@@ -177,6 +179,7 @@ object Config {
                 ConfigType.SENSOR1_VALUE          -> Timber.i("%-20s = %d", value.token, sensor1DistanciaDetecta)
                 ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
                 ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
+                ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
             }
         }
     }

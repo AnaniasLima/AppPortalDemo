@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbManager
 import android.os.Handler
+import android.provider.Settings.Global.getString
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.*
 
@@ -124,7 +126,9 @@ object ArduinoDevice {
         }
 
         when ( eventResponse.eventType ) {
-            EventType.FW_DUMMY,
+            EventType.FW_DUMMY -> {
+                Timber.e("FW_DUMMY =====> ${eventResponse.toString()}")
+            }
             EventType.FW_PLAY,
             EventType.FW_DEMO,
             EventType.FW_RESTART,
@@ -195,6 +199,14 @@ object ArduinoDevice {
 
                     ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
 
+                    if ( ! CleaningMachine.isStateMachineRunning() ) {
+                        if ( CleaningMachine.startStateMachine() ) {
+                            mainActivity?.runOnUiThread {
+                                WaitingMode.enterWaitingMode(VideoFase.WAITING_PEOPLE)
+                                (mainActivity as MainActivity).btnStateMachine.text = "Stop\\nFSM"
+                            }
+                        }
+                    }
 
                 } else {
                     Timber.e("Falha na criação da thread ")

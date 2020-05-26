@@ -21,9 +21,7 @@ enum class ErrorType(val type: Int, val message: String) {
 
 
 class MainActivity : AppCompatActivity() {
-    var temp: Float = 0F
-
-    var isStatMachineRunning = false
+    var temperaturaMedida: Float = 0F
 
 //    fun getURI(videoname:String): Uri {
 //        if (URLUtil.isValidUrl(videoname)) {
@@ -71,23 +69,8 @@ class MainActivity : AppCompatActivity() {
         CleaningMachine.start(this, applicationContext)
 
         insertSpinnerGameMachine()
-
         xxx()
-
-//        for (tenta in 1..5) {
-//            if (CleaningMachine.startStateMachine()) {
-//                btnStateMachine.text = getString(R.string.stopStateMachine)
-//                isStatMachineRunning = true
-//                break
-//            } else {
-//                Thread.sleep(1000)
-//            }
-//        }
-
-
         setButtonListeners()
-
-
     }
 
     fun xxx() {
@@ -103,18 +86,22 @@ class MainActivity : AppCompatActivity() {
 
         temperatura_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                temp = 35F + ((progress * 5F) / 100F)
-                temperatura_valor.text = String.format("%.2f°", temp)
-                if ( temp > 37F ) {
+                temperaturaMedida = 35F + ((progress * 5F) / 100F)
+                temperatura_valor.text = String.format("%.2f°", temperaturaMedida)
+                if ( temperaturaMedida > 37F ) {
                     temperatura_valor.setTextColor( getColor(R.color.red))
                 } else {
                     temperatura_valor.setTextColor( getColor(R.color.blue))
                 }
-                println("${progress.toString()} - ${String.format("%.2f", temp)}")
+                println("${progress.toString()} - ${String.format("%.2f", temperaturaMedida)}")
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) { }
-            override fun onStopTrackingTouch(seekBar: SeekBar?) { }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                if (  CleaningMachine.waitingThermometer ) {
+                    CleaningMachine.onThermometerFinished(temperaturaMedida)
+                }
+            }
         })
 
 
@@ -214,7 +201,8 @@ class MainActivity : AppCompatActivity() {
 
         // So manda se for alterado pela interface
         if ( sendToArduino) {
-            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%03d,%03d,%03d", CleaningMachine.sensor1Status, CleaningMachine.sensor2Status, CleaningMachine.sensor3Status))
+            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%03d,%03d,%03d,%03d",
+                CleaningMachine.sensor1Status, CleaningMachine.sensor2Status, CleaningMachine.sensor3Status, CleaningMachine.sensor4Status))
             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         }
     }
@@ -249,15 +237,12 @@ class MainActivity : AppCompatActivity() {
 
 
         btnStateMachine.setOnClickListener{
-            if ( isStatMachineRunning ) {
+            if ( CleaningMachine.isStateMachineRunning() ) {
                 btnStateMachine.text = getString(R.string.startStateMachine)
                 CleaningMachine.stopStateMachine()
-                isStatMachineRunning = false
-
             } else {
                 if ( CleaningMachine.startStateMachine() ) {
                     btnStateMachine.text = getString(R.string.stopStateMachine)
-                    isStatMachineRunning = true
                 } else {
                     Toast.makeText(this, "Offline", Toast.LENGTH_LONG).show()
                 }
@@ -301,6 +286,10 @@ class MainActivity : AppCompatActivity() {
             ajustaSensores(true)
         }
 
+        btn_alcohol_dispenser.setOnClickListener  {
+            CleaningMachine.sensor4Status = Config.sensor4DistanciaDetecta - 10
+            ajustaSensores(true)
+        }
 
         btnInvisivel.setOnClickListener  {
 

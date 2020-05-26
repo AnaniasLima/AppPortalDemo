@@ -127,7 +127,14 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                 if ( eventResponse.eventType == EventType.FW_NACK ) {
                     Timber.e("=============== FW_NACK =======================: ${commandReceived}")
                 } else {
-                    ArduinoDevice.onEventResponse(eventResponse)
+                    try {
+                        ArduinoDevice.onEventResponse(eventResponse)
+                    } catch (e: Exception) {
+                        EventResponse.invalidJsonPacketsReceived++
+                        Timber.e("=============== ERRO AO AVALIAR PACOTE =======================: ${eventResponse}")
+                        mostraEmHistory("ERRO AO AVALIAR PACOTE")
+                        return
+                    }
                 }
             }
         } catch (e: Exception) {

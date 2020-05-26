@@ -55,6 +55,7 @@ data class EventResponse(
     var s1: Int = 0,
     var s2: Int = 0,
     var s3: Int = 0,
+    var s4: Int = 0,
     var b1: Int = 0,
     var b2: Int = 0,
     var b3: Int = 0,
