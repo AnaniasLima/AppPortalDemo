@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="@android:color/holo_blue_light"
+    android:background="@color/fundo"
     tools:ignore="ExtraText">
 
     <androidx.constraintlayout.widget.Guideline
@@ -39,7 +39,7 @@
         app:layout_constraintBottom_toTopOf="@+id/gl_top1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/spinnerMachine"
-        android:background="@color/colorTopArea2"
+        android:background="@color/fundo"
         android:orientation="horizontal">
 
         <Button android:id="@+id/btnLogTag"
@@ -87,7 +87,7 @@
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/log_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/colorTextLog"
+        android:background="@color/fundo"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintEnd_toStartOf="@+id/gl_right"
         app:layout_constraintStart_toStartOf="parent"
@@ -96,7 +96,7 @@
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/history_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/colorTextHistory"
+        android:background="@color/fundo2"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintStart_toStartOf="@+id/gl_right"
         app:layout_constraintEnd_toEndOf="parent"
@@ -116,14 +116,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="invisible"
-        android:textColor="@color/red"
+        android:textColor="@color/white"
         android:gravity="center"
         android:textSize="60dp"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintEnd_toStartOf="@+id/gl_right"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_top1"
-        android:background="?android:selectableItemBackground"/>
+        android:background="@color/red"/>
     />
 
     <Button android:id="@+id/btn_mensagem_tela"
@@ -132,7 +132,7 @@
         android:layout_height="0dp"
         android:visibility="invisible"
         android:textColor="@color/white"
-        android:background="@android:color/holo_blue_light"
+        android:background="@color/fundo"
         android:textSize="60dp"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintEnd_toStartOf="@+id/gl_right"
@@ -156,7 +156,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/sensores_layout"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:background="#3296FA"
+        android:background="@color/fundo"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/gl_bottom">
@@ -173,7 +173,7 @@
         <Button android:id="@+id/btn_sensor1"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor1"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor1"
             app:srcCompat="@drawable/sensor_com_gente" />
@@ -185,7 +185,7 @@
             android:visibility="invisible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tv_sensor1"
-            android:background="@android:color/holo_blue_light">
+            android:background="@color/fundo">
 
             <TextView android:id="@+id/temperatura_valor"
                 android:layout_width="match_parent"
@@ -227,7 +227,7 @@
             android:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tv_sensor1"
-            android:background="#3296FA">
+            android:background="@color/fundo">
 
             <TextView android:id="@+id/tv_alcohol_dispenser"
                 android:layout_width="100dp"
@@ -243,7 +243,7 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:enabled="false"
-                android:background="@color/white"
+                android:background="@color/fundo"
                 app:layout_constraintStart_toStartOf="@+id/tv_alcohol_dispenser"
                 app:layout_constraintTop_toBottomOf="@+id/tv_alcohol_dispenser"
                 app:srcCompat="@drawable/devices" />
@@ -255,7 +255,7 @@
         <Button android:id="@+id/btn_door_in"
             android:layout_width="15dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             app:layout_constraintStart_toEndOf="@+id/temperatura_layout"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor1"
             app:srcCompat="@drawable/door_red" />
@@ -274,7 +274,7 @@
         <Button android:id="@+id/btn_sensor2"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor2"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor2"
             app:srcCompat="@drawable/sensor_com_gente" />
@@ -310,7 +310,7 @@
         <Button android:id="@+id/btn_sensor3"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             app:layout_constraintStart_toStartOf="@+id/tv_sensor3"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
             app:srcCompat="@drawable/sensor_com_gente" />
@@ -318,7 +318,7 @@
         <Button android:id="@+id/btn_door_out"
             android:layout_width="15dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             app:layout_constraintStart_toEndOf="@+id/tv_sensor3"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
             app:srcCompat="@drawable/door_red" />
@@ -326,7 +326,7 @@
         <Button android:id="@+id/btn_money"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:background="@color/white"
+            android:background="@color/fundo"
             android:enabled="false"
             app:layout_constraintStart_toEndOf="@+id/btn_door_out"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
@@ -342,7 +342,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:orientation="horizontal"
-        android:background="@android:color/holo_blue_light"
+        android:background="@color/fundo"
         app:layout_constraintTop_toTopOf="@+id/gl_bottom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/sensores_layout"
@@ -355,7 +355,7 @@
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
             app:layout_constraintStart_toEndOf="@+id/temperatura_layout"
-            android:background="@android:color/holo_blue_light">
+            android:background="@color/fundo">
 
             <TextView
                 android:id="@+id/alcohol_valor"
@@ -399,7 +399,7 @@
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
             app:layout_constraintStart_toEndOf="@+id/alcohol_layout"
-            android:background="@android:color/holo_blue_light">
+            android:background="@color/fundo">
 
             <TextView
                 android:id="@+id/desinfectante_valor"
@@ -443,7 +443,7 @@
             android:layout_height="150dp"
             app:layout_constraintTop_toBottomOf="@+id/gl_bottom"
             app:layout_constraintStart_toEndOf="@+id/desinfectante_layout"
-            android:background="@android:color/holo_blue_light">
+            android:background="@color/fundo">
 
             <TextView
                 android:id="@+id/desinfectante_pe_valor"

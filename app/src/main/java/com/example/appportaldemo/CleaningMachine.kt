@@ -38,7 +38,8 @@ enum class InOut  {
 
 enum class CleaningMachineCommand  {
     STATUS_RQ,
-    FW_PLAY,
+    FW_EJECT,
+    FW_LED,
     FW_DEMO;
 }
 
@@ -91,6 +92,7 @@ object CleaningMachine {
     var temperaturaMedida : Float = 0F
     var flagTimeout = false
 
+    var valorFatura = 0
 
     var runFaseHandler: Handler = Handler()
     var runFaseRunnable: Runnable = Runnable {
@@ -274,6 +276,8 @@ object CleaningMachine {
     fun ejetaProduto1() {
         if (  balanca1Status > 0 ) {
             ScreenLog.add(LogType.TO_HISTORY, "Ejetou ALCOOL")
+            ArduinoDevice.requestToSend(EventType.FW_EJECT, "1,1")
+            valorFatura += 1
         } else {
             ScreenLog.add(LogType.TO_HISTORY, "SEM ALCOOL")
         }
@@ -282,6 +286,8 @@ object CleaningMachine {
     fun ejetaProduto2() {
         if (  balanca2Status > 0 ) {
             ScreenLog.add(LogType.TO_HISTORY, "Ejetou produto 2")
+            ArduinoDevice.requestToSend(EventType.FW_EJECT, "2,1")
+            valorFatura += 2
         } else {
             ScreenLog.add(LogType.TO_HISTORY, "SEM produto 2")
         }
@@ -289,7 +295,9 @@ object CleaningMachine {
 
     fun ejetaProduto3() {
         if (  balanca3Status > 0 ) {
+            valorFatura += 4
             ScreenLog.add(LogType.TO_HISTORY, "Ejetou produto 3")
+            ArduinoDevice.requestToSend(EventType.FW_EJECT, "2,1")
         } else {
             ScreenLog.add(LogType.TO_HISTORY, "SEM produto 3")
         }
@@ -297,9 +305,18 @@ object CleaningMachine {
 
     fun ligaIndicadorSaida(tipo:Int) {
         when (tipo) {
-            0 -> ScreenLog.add(LogType.TO_HISTORY, "Led saida Off")
-            1 -> ScreenLog.add(LogType.TO_HISTORY, "Led saida VERMELHO")
-            2 -> ScreenLog.add(LogType.TO_HISTORY, "Led saida VERDE")
+            0 -> {
+                ScreenLog.add(LogType.TO_HISTORY, "Led saida Off")
+                ArduinoDevice.requestToSend(EventType.FW_LED, "1,7")
+            }
+            1 -> {
+                ScreenLog.add(LogType.TO_HISTORY, "Led saida VERMELHO")
+                ArduinoDevice.requestToSend(EventType.FW_LED, "1,1")
+            }
+            2 -> {
+                ArduinoDevice.requestToSend(EventType.FW_LED, "1,2")
+                ScreenLog.add(LogType.TO_HISTORY, "Led saida VERDE")
+            }
         }
     }
 
@@ -350,6 +367,8 @@ object CleaningMachine {
                 mainActivity?.runOnUiThread {
                     ScreenLog.clear(LogType.TO_HISTORY)
                 }
+
+                ligaIndicadorSaida(0)
 
             }
 
@@ -506,7 +525,7 @@ object CleaningMachine {
         Timber.e("on_WAITING_ENTER ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-
+                valorFatura =0
                 ejetaProduto1()
 
                 desiredState = receivedState
@@ -625,14 +644,19 @@ object CleaningMachine {
             }
 
             InOut.OUT -> {
-                (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
+
+                mainActivity?.runOnUiThread {
+                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
+                }
                 cancelRunFaseTimer()
             }
 
             InOut.TIMEOUT -> {
-                (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
+                mainActivity?.runOnUiThread {
+                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
+                }
                 changeCurrentState(CleaningMachineState.WAITING_FINISH)
             }
         }
@@ -701,7 +725,7 @@ object CleaningMachine {
                     (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
                     (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
                     (mainActivity as MainActivity).btn_money.setBackgroundResource(R.drawable.dindin_futuro)
-                    ScreenLog.add(LogType.TO_HISTORY, "Faturou $$$")
+                    ScreenLog.add(LogType.TO_HISTORY, "Faturou ${valorFatura}")
                 }
 
             }
@@ -711,7 +735,7 @@ object CleaningMachine {
                     (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
                     (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
                     (mainActivity as MainActivity).btn_money.setBackgroundResource(R.drawable.dindin_futuro)
-                    ScreenLog.add(LogType.TO_HISTORY, "Faturou $$$")
+                    ScreenLog.add(LogType.TO_HISTORY, "Faturou ${valorFatura}")
                 }
                 changeCurrentState(CleaningMachineState.WAITING_PERSON)
             }

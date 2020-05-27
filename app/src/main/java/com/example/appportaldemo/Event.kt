@@ -89,7 +89,7 @@ enum class EventType(val type: Int, val command: String) {
 
     FW_PINPAD(1, "fw_pinpad"),
     FW_TABLET_RESET(2, "fw_tablet_reset"),
-    FW_PLAY(3, "fw_play"),
+    FW_EJECT(3, "fw_eject"),
     FW_DEMO(4, "fw_demo"),
     FW_BILL_ACCEPTOR(5, "fw_noteiro"),
     FW_LED(6, "fw_led"),

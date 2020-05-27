@@ -126,10 +126,12 @@ object ArduinoDevice {
         }
 
         when ( eventResponse.eventType ) {
+            EventType.FW_EJECT -> {
+                Timber.e("FW_EJECT =====> ${eventResponse.toString()}")
+            }
             EventType.FW_DUMMY -> {
                 Timber.e("FW_DUMMY =====> ${eventResponse.toString()}")
             }
-            EventType.FW_PLAY,
             EventType.FW_DEMO,
             EventType.FW_RESTART,
             EventType.FW_STATUS_RQ -> {
