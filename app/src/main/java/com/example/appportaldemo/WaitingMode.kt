@@ -61,7 +61,7 @@ object WaitingMode {
         if (++lastPlayedVideo == videosList.size ) {
             lastPlayedVideo = 0
         }
-        Timber.i("WWW PLAYING NEXT VIDEO $lastPlayedVideo  Video:${videosList[lastPlayedVideo]} Max:${videosList.size}")
+        Timber.i("PLAYING NEXT VIDEO $lastPlayedVideo  Video:${videosList[lastPlayedVideo]} Max:${videosList.size}")
         setVideoFilename(videosList[lastPlayedVideo].filename)
         videoView.start()
     }

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:background="@android:color/holo_blue_light"
     tools:ignore="ExtraText">
 
     <androidx.constraintlayout.widget.Guideline
@@ -125,13 +126,13 @@
         android:background="?android:selectableItemBackground"/>
     />
 
-    <Button android:id="@+id/btn_entrada_liberada"
+    <Button android:id="@+id/btn_mensagem_tela"
         android:text="ENTRADA LIBERADA"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="invisible"
-        android:textColor="@color/blue"
-        android:background="@color/white"
+        android:textColor="@color/white"
+        android:background="@android:color/holo_blue_light"
         android:textSize="60dp"
         app:layout_constraintBottom_toTopOf="@+id/gl_bottom"
         app:layout_constraintEnd_toStartOf="@+id/gl_right"
@@ -180,7 +181,7 @@
         <!--  ============================================================ -->
         <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/temperatura_layout"
             android:layout_width="100dp"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:visibility="invisible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tv_sensor1"
@@ -241,6 +242,7 @@
             <Button android:id="@+id/btn_alcohol_dispenser"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:enabled="false"
                 android:background="@color/white"
                 app:layout_constraintStart_toStartOf="@+id/tv_alcohol_dispenser"
                 app:layout_constraintTop_toBottomOf="@+id/tv_alcohol_dispenser"
@@ -325,6 +327,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:background="@color/white"
+            android:enabled="false"
             app:layout_constraintStart_toEndOf="@+id/btn_door_out"
             app:layout_constraintTop_toBottomOf="@+id/tv_sensor3"
             app:srcCompat="@drawable/dindin" />
@@ -339,10 +342,12 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:orientation="horizontal"
-        android:background="@color/colorAccent"
+        android:background="@android:color/holo_blue_light"
         app:layout_constraintTop_toTopOf="@+id/gl_bottom"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/sensores_layout">
+        app:layout_constraintStart_toEndOf="@+id/sensores_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        >
 
 
         <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/alcohol_layout"

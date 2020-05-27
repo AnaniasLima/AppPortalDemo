@@ -130,7 +130,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                     try {
                         ArduinoDevice.onEventResponse(eventResponse)
                     } catch (e: Exception) {
-                        EventResponse.invalidJsonPacketsReceived++
+                        e.printStackTrace()
                         Timber.e("=============== ERRO AO AVALIAR PACOTE =======================: ${eventResponse}")
                         mostraEmHistory("ERRO AO AVALIAR PACOTE")
                         return
