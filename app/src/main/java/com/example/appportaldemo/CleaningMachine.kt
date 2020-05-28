@@ -450,7 +450,7 @@ object CleaningMachine {
 
                 val random = Random()
                 temperaturaFake= ((random.nextInt(15)) + 360) / 10F
-                if ( temperaturaFake <= 37.3F) {
+                if ( temperaturaFake < 37.3F) {
                     changeCurrentState(CleaningMachineState.ALCOHOL_PROCESS)
                 } else {
                     changeCurrentState(CleaningMachineState.FEVER_PROCEDURE)
@@ -528,7 +528,7 @@ object CleaningMachine {
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).btn_door_in.setBackgroundResource(R.drawable.door_red)
                     (mainActivity as MainActivity).btn_febre.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_febre.text = String.format("FEBRE\n%.2f°", temperaturaMedida)
+                    (mainActivity as MainActivity).btn_febre.text = String.format("FEBRE\n%.2f°\n\nDe acordo com decreto N° 40.778/2020\nNão é permitida a entrada de pessoas\ncom mais de 37,3°C.", temperaturaMedida)
                     (mainActivity as MainActivity).btn_febre.isEnabled = true
                     WaitingMode.enterWaitingMode(VideoFase.FEVER)
                 }
@@ -703,7 +703,7 @@ object CleaningMachine {
             InOut.IN -> {
                 desiredState = receivedState
                 ligaIndicadorSaida(2)
-                initRunFaseTimer(60000L )
+                initRunFaseTimer(10000L )
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).btn_mensagem_tela.text = "Aguardando\nsaida"
                     (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
