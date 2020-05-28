@@ -6,10 +6,12 @@ import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.felhr.usbserial.UsbSerialDevice
 import com.felhr.usbserial.UsbSerialInterface
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.io.IOException
 import java.util.HashMap
@@ -157,6 +159,12 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
     override fun run() {
 //        this.priority(Thread.MAX_PRIORITY)
+
+        mainActivity?.runOnUiThread {
+            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.INVISIBLE
+            WaitingMode.enterWaitingMode(VideoFase.HELP)
+        }
+
         if ( operation ==  CONNECT) {
             if ( connectInBackground() ) {
                 finishThread = false
@@ -187,6 +195,12 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         } else if ( operation ==  DISCONNECT) {
             disconnectInBackground()
         }
+
+        mainActivity?.runOnUiThread {
+            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.VISIBLE
+            WaitingMode.enterWaitingMode(VideoFase.HELP)
+        }
+
         isConnected = false
     }
 

@@ -17,7 +17,7 @@
         android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity android:name=".MainActivity"
             android:launchMode="singleInstance"
-            android:screenOrientation="landscape">
+            android:screenOrientation="fullSensor">
 
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />

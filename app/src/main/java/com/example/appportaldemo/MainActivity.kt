@@ -25,6 +25,7 @@ enum class ErrorType(val type: Int, val message: String) {
 
 class MainActivity : AppCompatActivity() {
     var temperaturaMedida: Float = 0F
+    var contaMagica = 0
 
 //    fun getURI(videoname:String): Uri {
 //        if (URLUtil.isValidUrl(videoname)) {
@@ -74,7 +75,6 @@ class MainActivity : AppCompatActivity() {
         ArduinoDevice.start(this, applicationContext)
         CleaningMachine.start(this, applicationContext)
 
-        insertSpinnerGameMachine()
         xxx()
         setButtonListeners()
     }
@@ -83,7 +83,6 @@ class MainActivity : AppCompatActivity() {
 
 
         ajustaSensores(false, false)
-        ajustaBalancas(false)
 
         btn_door_in.setBackgroundResource(R.drawable.door_red)
         btn_door_out.setBackgroundResource(R.drawable.door_red)
@@ -112,54 +111,6 @@ class MainActivity : AppCompatActivity() {
         })
 
 
-        alcohol_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                alcohol_valor.text = String.format("%d%%", progress.toInt())
-                CleaningMachine.balanca1Status = progress.toInt()
-                if ( progress.toInt() < 25 ) {
-                    alcohol_valor.setTextColor( getColor(R.color.red))
-                } else {
-                    alcohol_valor.setTextColor( getColor(R.color.blue))
-                }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                ajustaBalancas(true)
-            }
-        })
-
-
-        desinfectante_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                desinfectante_valor.text = String.format("%d%%", progress.toInt())
-                CleaningMachine.balanca2Status = progress.toInt()
-                if ( progress.toInt() < 25 ) {
-                    desinfectante_valor.setTextColor( getColor(R.color.red))
-                } else {
-                    desinfectante_valor.setTextColor( getColor(R.color.blue))
-                }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                ajustaBalancas(true)
-            }
-        })
-
-        desinfectante_pe_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                desinfectante_pe_valor.text = String.format("%d%%", progress.toInt())
-                CleaningMachine.balanca3Status = progress.toInt()
-                if ( progress.toInt() < 25 ) {
-                    desinfectante_pe_valor.setTextColor( getColor(R.color.red))
-                } else {
-                    desinfectante_pe_valor.setTextColor( getColor(R.color.blue))
-                }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                ajustaBalancas(true)
-            }
-        })
 
     }
 
@@ -173,19 +124,6 @@ class MainActivity : AppCompatActivity() {
                 Timber.e(str)
                 finish()
                 System.exit(0)
-            }
-        }
-    }
-
-    fun insertSpinnerGameMachine() {
-        spinnerMachine.adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1 , CleaningMachine.questionDelayList)
-        CleaningMachine.setDelayForQuestion(spinnerMachine.selectedItem.toString())
-        spinnerMachine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                Timber.i("Nada foi selecionado")
-            }
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                CleaningMachine.setDelayForQuestion(parent!!.getItemAtPosition(pos).toString())
             }
         }
     }
@@ -222,20 +160,34 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun ajustaBalancas(sendToArduino:Boolean) {
-        // TODO:xx
-        alcohol_seekBar.setProgress(CleaningMachine.balanca1Status)
-        desinfectante_seekBar.setProgress(CleaningMachine.balanca2Status)
-        desinfectante_pe_seekBar.setProgress(CleaningMachine.balanca3Status)
-        if ( sendToArduino) {
-            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("B,%03d,%03d,%03d", CleaningMachine.balanca1Status, CleaningMachine.balanca2Status, CleaningMachine.balanca3Status))
-            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-        }
+    fun ajustaBalancas() {
+//        // TODO:xx
+//        alcohol_seekBar.setProgress(CleaningMachine.balanca1Status)
+//        desinfectante_seekBar.setProgress(CleaningMachine.balanca2Status)
+//        desinfectante_pe_seekBar.setProgress(CleaningMachine.balanca3Status)
     }
 
 
 
     fun setButtonListeners() {
+
+        btnMagico.setOnClickListener{
+            Timber.e("contaMagica=${contaMagica}")
+            if ( contaMagica++ > 5 ) {
+                painel_inferior.visibility=View.VISIBLE
+            }
+            if ( contaMagica++ > 10 ) {
+                painel_suporte.visibility=View.VISIBLE
+            }
+        }
+
+        btnHidePainel.setOnClickListener{
+            contaMagica = 0
+            painel_inferior.visibility=View.GONE
+            painel_suporte.visibility=View.GONE
+        }
+
+
 
         // --------------------------------------------------
         // Primeira Linha -----------------------------------
@@ -328,12 +280,12 @@ class MainActivity : AppCompatActivity() {
 
         btnInvisivel.setOnClickListener  {
 
-            if  (log_recycler_view.visibility == View.VISIBLE) {
-                log_recycler_view.setVisibility(View.INVISIBLE)
-                log_recycler_view.setVisibility(View.GONE)
-            } else {
-                log_recycler_view.setVisibility(View.VISIBLE)
-            }
+//            if  (log_recycler_view.visibility == View.VISIBLE) {
+//                log_recycler_view.setVisibility(View.INVISIBLE)
+//                log_recycler_view.setVisibility(View.GONE)
+//            } else {
+//                log_recycler_view.setVisibility(View.VISIBLE)
+//            }
 
 //            WaitingMode.leaveWaitingMode()
 //            log_recycler_view.setVisibility(View.VISIBLE)

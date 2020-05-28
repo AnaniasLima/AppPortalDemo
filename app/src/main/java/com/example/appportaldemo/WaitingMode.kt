@@ -42,7 +42,7 @@ object WaitingMode {
 
         releasePlayer()
         videoView.visibility = View.VISIBLE
-        btnVideo.setVisibility(View.VISIBLE)
+//        btnVideo.setVisibility(View.VISIBLE)
 
         initPlayer(fase)
     }
@@ -51,7 +51,7 @@ object WaitingMode {
         releasePlayer()
 
         videoView.visibility = View.GONE
-        btnVideo.setVisibility(View.INVISIBLE)
+        btnVideo.setVisibility(View.GONE)
         modoWaitingRunning = false
     }
 
@@ -97,7 +97,7 @@ object WaitingMode {
             videoView.stopPlayback()
         }
         videoView.visibility = View.GONE
-        (myActivity as MainActivity).btnInvisivel.visibility = View.INVISIBLE
+        (myActivity as MainActivity).btnInvisivel.visibility = View.GONE
     }
 
     private fun setVideoFilename(filename:String) {
