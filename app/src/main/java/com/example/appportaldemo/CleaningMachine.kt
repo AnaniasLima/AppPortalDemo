@@ -456,6 +456,12 @@ object CleaningMachine {
                 desiredState = receivedState
                 initRunFaseTimer(10000L )
                 mainActivity?.runOnUiThread {
+
+                    (mainActivity as MainActivity).btn_sem_febre.text = String.format("%.2f°", temperaturaMedida)
+                    (mainActivity as MainActivity).btn_sem_febre.visibility = View.VISIBLE
+                    (mainActivity as MainActivity).btn_sem_febre.isEnabled = false
+
+
                     (mainActivity as MainActivity).btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_on)
                     (mainActivity as MainActivity).btn_alcohol_dispenser.isEnabled = true
                     WaitingMode.enterWaitingMode(VideoFase.ALCOHOL)
@@ -467,6 +473,10 @@ object CleaningMachine {
 
 
                 mainActivity?.runOnUiThread {
+
+                    (mainActivity as MainActivity).btn_sem_febre.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_sem_febre.isEnabled = false
+
                     (mainActivity as MainActivity).btn_alcohol_dispenser.setBackgroundResource(R.drawable.devices)
                     (mainActivity as MainActivity).btn_alcohol_dispenser.isEnabled = false
                     WaitingMode.leaveWaitingMode()
@@ -476,6 +486,10 @@ object CleaningMachine {
             InOut.TIMEOUT -> {
                 waitingThermometer = false
                 mainActivity?.runOnUiThread {
+
+                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
+
                     (mainActivity as MainActivity).btn_alcohol_dispenser.setBackgroundResource(R.drawable.devices)
                     (mainActivity as MainActivity).btn_alcohol_dispenser.isEnabled = false
                     WaitingMode.leaveWaitingMode()

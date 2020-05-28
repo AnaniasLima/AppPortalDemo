@@ -2,11 +2,14 @@ package com.example.appportaldemo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.os.Environment.getExternalStorageDirectory
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.os.EnvironmentCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.io.InputStream
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 1024x600 resolução
+
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
@@ -57,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             getResources().getIdentifier("config", "raw", getPackageName())
         )
 
+//        Timber.e( "=========== getAbsolutePath = ${Environment.getExternalStorageDirectory().getAbsolutePath()}")
 
         // TODO: Ajustar para edir permissao para usuário ao invez de habilitar permissao na mão
         if (!Config.loadConfig(this, "config.json", ins)) {

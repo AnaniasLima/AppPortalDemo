@@ -11,14 +11,22 @@
 	"SENSOR3_VALUE": 50,
 	"SENSOR4_VALUE": 50,
 
-	"WAITING_VIDEO"          : [ { "volume": 99, "filename": "esperando_gente.mp4" } ],
+	"WAITING_VIDEO"          : [
+		{ "volume": 99, "filename": "esperando_gente.mp4" } 
+	],
 	"WELCOME_VIDEO"          : [
 		{ "volume": 99, "filename": "chegou_gente.mp4" },
 		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" }
 	],
 	"CALL_HELP"              : [ { "volume": 99, "filename": "shazam.mp4"} ],
-	"ALCOHOL_INSTRUCTION"    : [ { "volume": 99, "filename": "instrucao_uso_alcool.mp4"} ],
-	"FEVER_INSTRUCTION"      : [ { "volume": 99, "filename": "instrucao_em_caso_febre.mp4"} ],
+	"ALCOHOL_INSTRUCTION"    : [ 
+		{ "volume": 99, "filename": "tela_verde.mp4"},
+		{ "volume": 99, "filename": "instrucao_uso_alcool.mp4"} 
+	],
+	"FEVER_INSTRUCTION"      : [ 
+		{ "volume": 99, "filename": "tela_vermelha.mp4"},
+		{ "volume": 99, "filename": "instrucao_em_caso_febre.mp4"}
+	],
 	"ENTER_INSTRUCTION"      : [ { "volume": 99, "filename": "instrucao_entrar.mp4"} ],
 	
 	"ON_DEMO_VIDEO": [

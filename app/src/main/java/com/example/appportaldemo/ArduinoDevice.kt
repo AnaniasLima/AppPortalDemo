@@ -257,6 +257,9 @@ object ArduinoDevice {
                     EventType.FW_DUMMY -> {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
+                    EventType.FW_EJECT -> {
+                        ret = connectThread!!.requestToSend(eventType, action=action)
+                    }
                     else -> {
                         // do nothing
                     }
