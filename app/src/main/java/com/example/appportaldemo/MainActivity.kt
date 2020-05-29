@@ -1,9 +1,12 @@
 package com.example.appportaldemo
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.os.Environment.DIRECTORY_DOCUMENTS
 import android.os.Environment.getExternalStorageDirectory
+import android.os.Handler
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -12,7 +15,7 @@ import android.widget.Toast
 import androidx.core.os.EnvironmentCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
-import java.io.InputStream
+import java.io.*
 
 
 enum class ErrorType(val type: Int, val message: String) {
@@ -26,6 +29,27 @@ enum class ErrorType(val type: Int, val message: String) {
 class MainActivity : AppCompatActivity() {
     var temperaturaMedida: Float = 0F
     var contaMagica = 0
+    var jaViuUSB:Boolean=false
+    var primeiraConexaoHandler: Handler = Handler()
+    var primeiraConexaoRunnable: Runnable = Runnable {
+        ArduinoDevice.connect()
+    }
+
+    private fun primeiraConexaoTimer() {
+        var timeout = 5000L
+        Timber.e("=======WWW ======= primeiraConexaoTimer jaViuUSB=${jaViuUSB} ====================")
+        if ( jaViuUSB  ) {
+            primeiraConexaoHandler.postDelayed(primeiraConexaoRunnable, timeout )
+        } else {
+            cancelPrimeiraConexaoTimer()
+        }
+    }
+
+    private fun cancelPrimeiraConexaoTimer() {
+        try {
+            primeiraConexaoHandler.removeCallbacks(primeiraConexaoRunnable)
+        } catch (e: Exception) {}
+    }
 
 //    fun getURI(videoname:String): Uri {
 //        if (URLUtil.isValidUrl(videoname)) {
@@ -48,6 +72,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+//
+//        fun createExternalStoragePrivateFile() {
+//        // Create a path where we will place our private file on external
+//        // storage.
+//        val file = File(getExternalFilesDir(null), "alc_gel_on.png")
+//
+//            Timber.e( "=========== file = ${file}")
+//
+//            try {
+//            // Very simple code to copy a picture from the application's
+//            // resource into the external file.  Note that this code does
+//            // no error checking, and assumes the picture is small (does not
+//            // try to copy it in chunks).  Note that if external storage is
+//            // not currently mounted this will silently fail.
+//            val bbb = resources.openRawResource(R.drawable.alc_gel_on)
+//            val os: OutputStream = FileOutputStream(file)
+//            val data = ByteArray(bbb.available())
+//            bbb.read(data)
+//            os.write(data)
+//            bbb.close()
+//            os.close()
+//        } catch (e: IOException) {
+//            // Unable to create file, likely because external storage is
+//            // not currently mounted.
+//            Timber.e("ExternalStorage Error writing $file")
+//        }
+//    }
+
+
+//    fun validateConfigLocalization() {
+//        // Create a path where we will place our private file on external
+//        // storage.
+//        val path = getExternalFilesDir(null)
+//        val file = File(path, "config.json")
+//
+//        if ( file.isFile  ) {
+//            Timber.e( "Achou arquivo ")
+//        } else {
+//            Timber.e( "Nao Achou arquivo ")
+//        }
+//        Timber.e( "=========== path=$path    file = ${file}")
+//    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,14 +128,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val ins: InputStream = getResources().openRawResource(
-            getResources().getIdentifier("config", "raw", getPackageName())
-        )
+//        validateConfigLocalization()
 
-//        Timber.e( "=========== getAbsolutePath = ${Environment.getExternalStorageDirectory().getAbsolutePath()}")
 
-        // TODO: Ajustar para edir permissao para usuário ao invez de habilitar permissao na mão
-        if (!Config.loadConfig(this, "config.json", ins)) {
+        // TODO: Ajustar para pedir permissao para usuário ao invez de habilitar permissao na mão
+        if (!Config.loadConfig(this, "config.json",  resources.openRawResource(R.raw.config))) {
             erroFatal(Config.msgErro)
         }
 

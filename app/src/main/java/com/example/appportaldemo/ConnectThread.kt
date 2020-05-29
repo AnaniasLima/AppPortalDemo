@@ -160,10 +160,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
     override fun run() {
 //        this.priority(Thread.MAX_PRIORITY)
 
-        mainActivity?.runOnUiThread {
-            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.INVISIBLE
-            WaitingMode.enterWaitingMode(VideoFase.HELP)
-        }
+//        mainActivity.runOnUiThread {
+//            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.INVISIBLE
+//            WaitingMode.enterWaitingMode(VideoFase.HELP)
+//        }
 
         if ( operation ==  CONNECT) {
             if ( connectInBackground() ) {
@@ -196,10 +196,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             disconnectInBackground()
         }
 
-        mainActivity?.runOnUiThread {
-            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.VISIBLE
-            WaitingMode.enterWaitingMode(VideoFase.HELP)
-        }
+//        mainActivity.runOnUiThread {
+//            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.VISIBLE
+//            WaitingMode.enterWaitingMode(VideoFase.HELP)
+//        }
 
         isConnected = false
     }

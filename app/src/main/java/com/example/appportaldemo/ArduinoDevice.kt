@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbManager
 import android.os.Handler
 import android.provider.Settings.Global.getString
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
@@ -66,6 +67,11 @@ object ArduinoDevice {
     private var usbSerialRunnable = Runnable {
         if ( ! ConnectThread.isConnected ) {
             mostraNaTela("usbSerialRunnable NAO Conectado")
+
+            mainActivity?.runOnUiThread {
+                (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.VISIBLE
+            }
+
             connect()
         }
 
@@ -157,6 +163,7 @@ object ArduinoDevice {
                         usbSerialImediateChecking(200)
                     }
                     UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                        (mainActivity as MainActivity).jaViuUSB = true
                         mostraNaTela("ACTION_USB_DEVICE_ATTACHED")
                         connect()
                     }
@@ -209,6 +216,11 @@ object ArduinoDevice {
                             }
                         }
                     }
+
+                    mainActivity?.runOnUiThread {
+                        (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.INVISIBLE
+                    }
+
 
                 } else {
                     Timber.e("Falha na criação da thread ")

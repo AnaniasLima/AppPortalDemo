@@ -345,7 +345,8 @@ object CleaningMachine {
                 initRunFaseTimer(0L)
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
                 mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_decreto.setBackgroundResource(R.drawable.imagem_decreto)
+//                    (mainActivity as MainActivity).btn_decreto.setBackgroundResource(R.drawable.imagem_decreto)
+                    (mainActivity as MainActivity).btn_decreto.setBackgroundResource(R.drawable.bem_vindo4)
                     (mainActivity as MainActivity).btn_decreto.visibility = View.VISIBLE
 
 //                    WaitingMode.enterWaitingMode(VideoFase.WAITING_PEOPLE)
@@ -450,6 +451,7 @@ object CleaningMachine {
 
                 val random = Random()
                 temperaturaFake= ((random.nextInt(15)) + 360) / 10F
+
                 if ( temperaturaFake < 37.3F) {
                     changeCurrentState(CleaningMachineState.ALCOHOL_PROCESS)
                 } else {
@@ -524,33 +526,45 @@ object CleaningMachine {
                     temperaturaMedida =  temperaturaFake
                 }
                 desiredState = receivedState
-                initRunFaseTimer(20000L )
+                initRunFaseTimer(5000L )
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).btn_door_in.setBackgroundResource(R.drawable.door_red)
-                    (mainActivity as MainActivity).btn_febre.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_febre.text = String.format("FEBRE\n%.2f°\n\nDe acordo com decreto N° 40.778/2020\nNão é permitida a entrada de pessoas\ncom mais de 37,3°C.", temperaturaMedida)
-                    (mainActivity as MainActivity).btn_febre.isEnabled = true
-                    WaitingMode.enterWaitingMode(VideoFase.FEVER)
+                    (mainActivity as MainActivity).btn_febre1.visibility = View.VISIBLE
+                    (mainActivity as MainActivity).btn_febre1.text = String.format("%.2f°", temperaturaMedida)
+                    (mainActivity as MainActivity).btn_febre1.isEnabled = true
+                    (mainActivity as MainActivity).btn_febre2.visibility = View.VISIBLE
+                    (mainActivity as MainActivity).btn_febre2.text = String.format("" +
+                            "De acordo com decreto N° 40.778/2020 " +
+                            "Não é permitida a entrada de pessoas com mais de 37,3°C " +
+                            "em estabelecimentos comerciais.")
+                    (mainActivity as MainActivity).btn_febre2.isEnabled = true
+
+//                    WaitingMode.enterWaitingMode(VideoFase.FEVER)
                 }
             }
 
             InOut.OUT -> {
                 waitingThermometer = false
                 mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_febre.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_febre.isEnabled = false
-                    WaitingMode.leaveWaitingMode()
+                    (mainActivity as MainActivity).btn_febre1.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_febre1.isEnabled = false
+                    (mainActivity as MainActivity).btn_febre2.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_febre2.isEnabled = false
+                    (mainActivity as MainActivity).btn_febre2.text =""
+//                        WaitingMode.leaveWaitingMode()
                 }
             }
 
             InOut.TIMEOUT -> {
                 waitingThermometer = false
                 mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_febre.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_febre.isEnabled = false
-                    WaitingMode.leaveWaitingMode()
+                    (mainActivity as MainActivity).btn_febre1.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_febre1.isEnabled = false
+                    (mainActivity as MainActivity).btn_febre2.visibility = View.INVISIBLE
+                    (mainActivity as MainActivity).btn_febre2.isEnabled = false
+//                    WaitingMode.leaveWaitingMode()
                 }
-                changeCurrentState(CleaningMachineState.CALL_ATENDENT)
+                changeCurrentState(CleaningMachineState.WAITING_PERSON)
             }
         }
     }
@@ -955,9 +969,10 @@ object CleaningMachine {
                         }
 
                         CleaningMachineState.FEVER_PROCEDURE -> {
-                            if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
-                                changeCurrentState(CleaningMachineState.WAITING_PERSON)
-                            }
+                            // só sai por timeout
+//                            if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
+//                                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+//                            }
                         }
 
                         CleaningMachineState.CALL_ATENDENT -> {

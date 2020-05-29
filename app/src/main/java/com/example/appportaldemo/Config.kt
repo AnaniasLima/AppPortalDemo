@@ -88,6 +88,8 @@ object Config {
         val jsonObject : JSONObject?
         var curItem: String
 
+
+
 //        if ( ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_EXTERNAL_STORAGE) !=
 //            PackageManager.PERMISSION_GRANTED ) {
 //            msgErro = "\n   Sem permissao para ler arquivo   \n   " + file +  "   \n"
