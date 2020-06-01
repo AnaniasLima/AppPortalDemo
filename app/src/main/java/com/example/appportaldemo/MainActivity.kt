@@ -1,25 +1,20 @@
 package com.example.appportaldemo
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
-import android.os.Environment.DIRECTORY_DOCUMENTS
-import android.os.Environment.getExternalStorageDirectory
 import android.os.Handler
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.view.Window
+import android.view.WindowManager
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.core.os.EnvironmentCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.io.*
 
 
 enum class ErrorType(val type: Int, val message: String) {
-    INVALID_WAITING_MODE_VIDEOS( 1, "ON_WAITING_VIDEO: Sem videos definidos para modo waiting"),
+    INVALID_WAITING_MODE_VIDEOS( 1, "ON_WAITING_PEOPLE: Sem videos definidos para modo waiting"),
     INVALID_TIME_TO_DEMO( 1, "DEMO_TIME: Tempo configurado menor que tempo minimo (120 segundos)"),
     RUN_DEMO_TIMEOUT( 2, "Sem Resposta da finalização da DEMO")
     ;
@@ -102,22 +97,29 @@ class MainActivity : AppCompatActivity() {
 //    }
 
 
-//    fun validateConfigLocalization() {
-//        // Create a path where we will place our private file on external
-//        // storage.
-//        val path = getExternalFilesDir(null)
-//        val file = File(path, "config.json")
-//
-//        if ( file.isFile  ) {
-//            Timber.e( "Achou arquivo ")
-//        } else {
-//            Timber.e( "Nao Achou arquivo ")
-//        }
-//        Timber.e( "=========== path=$path    file = ${file}")
-//    }
+    fun validateConfigLocalization() {
+        // Create a path where we will place our private file on external
+        // storage.
+        val path = getExternalFilesDir(null)
+        val file = File(path, "config.json")
+
+        if ( file.isFile  ) {
+            Timber.e( "Achou arquivo ")
+        } else {
+            Timber.e( "Nao Achou arquivo ")
+        }
+        Timber.e( "=========== path=$path    file = ${file}")
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+
         super.onCreate(savedInstanceState)
 
         // 1024x600 resolução
@@ -128,21 +130,21 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
 //        validateConfigLocalization()
 
 
-        // TODO: Ajustar para pedir permissao para usuário ao invez de habilitar permissao na mão
-        if (!Config.loadConfig(this, "config.json",  resources.openRawResource(R.raw.config))) {
-            erroFatal(Config.msgErro)
-        }
 
+        Config.start(this, applicationContext)
         ScreenLog.start(this, applicationContext, log_recycler_view, history_recycler_view)
-        WaitingMode.start(this, video_view, btnInvisivel)
+        WaitingMode.start(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
         ArduinoDevice.start(this, applicationContext)
         CleaningMachine.start(this, applicationContext)
 
         xxx()
         setButtonListeners()
+
     }
 
     fun xxx() {
@@ -153,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         btn_door_in.setBackgroundResource(R.drawable.door_red)
         btn_door_out.setBackgroundResource(R.drawable.door_red)
         btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-        btn_alcohol_dispenser.setBackgroundResource(R.drawable.devices)
+        btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
         btn_money.setBackgroundResource(R.drawable.dindin_futuro)
 
         temperatura_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
@@ -237,7 +239,9 @@ class MainActivity : AppCompatActivity() {
 
     fun setButtonListeners() {
 
+
         btnMagico.setOnClickListener{
+//            WaitingMode.enterWaitingMode(VideoFase.TEMPERATURE_MEASURE)
             Timber.e("contaMagica=${contaMagica}")
             if ( contaMagica++ > 5 ) {
                 painel_inferior.visibility=View.VISIBLE

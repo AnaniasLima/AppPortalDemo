@@ -20,21 +20,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <VideoView
-            android:id="@+id/video_view"
+        <VideoView android:id="@+id/waiting_mode_video_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"/>
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_febre"
+        <Button android:id="@+id/waiting_mode_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+        <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_febre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.30" />
 
-        <Button
-            android:id="@+id/btn_febre1"
+        <Button android:id="@+id/btn_fever_show_value"
             android:text=""
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -45,8 +47,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/gl_febre"
             android:background="@color/red"/>
-        <Button
-            android:id="@+id/btn_febre2"
+        <Button android:id="@+id/btn_fever_show_message"
             android:text=""
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -57,9 +58,8 @@
             app:layout_constraintTop_toTopOf="@+id/gl_febre"
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@color/red"/>
-        <Button
-            android:id="@+id/btn_sem_febre"
-            android:text="ENTRADA LIBERADA"
+        <Button android:id="@+id/btn_sem_febre"
+            android:text=""
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="invisible"
@@ -68,8 +68,7 @@
             android:textSize="120dp"
             android:background="?android:selectableItemBackground"/>
 
-        <Button
-            android:id="@+id/btn_aguardando_conexao"
+        <Button  android:id="@+id/btn_aguardando_conexao"
             android:text="Aguardando Conexão"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -81,16 +80,14 @@
 
 
 
-        <Button
-            android:id="@+id/btn_decreto"
+        <Button  android:id="@+id/btn_show_full_screen"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="invisible"
             android:textColor="@color/white"
             android:gravity="center"
             android:textSize="120dp"
-            android:background="?android:selectableItemBackground"/>
-
+            android:background="@drawable/full_screen_background"/>
 
         <Button
             android:id="@+id/btn_mensagem_tela"
@@ -260,7 +257,7 @@
             android:layout_width="100dp"
             android:layout_height="match_parent"
             android:textColor="@color/red"
-            android:visibility="invisible"
+            android:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn_cleaning_area"
             android:background="@color/fundo">
@@ -280,6 +277,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:rotation="270"
+                android:enabled="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/temperatura_valor"/>
@@ -296,27 +294,15 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <!--  ============================================================ -->
-        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/alcohol_dispenser"
-            android:layout_width="100dp"
-            android:layout_height="0dp"
-            android:visibility="visible"
+
+        <Button android:id="@+id/btn_alcohol_dispenser"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:enabled="false"
+            android:background="@color/fundo"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_cleaning_area"
-            android:background="@color/fundo">
-
-
-            <Button android:id="@+id/btn_alcohol_dispenser"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:enabled="false"
-                android:background="@color/fundo"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/devices" />
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintStart_toEndOf="@+id/temperatura_layout"
+            app:srcCompat="@drawable/alc_gel_off" />
 
 
 
@@ -325,7 +311,7 @@
             android:layout_height="100dp"
             android:background="@color/fundo"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/alcohol_dispenser"
+            app:layout_constraintStart_toEndOf="@+id/btn_alcohol_dispenser"
             app:srcCompat="@drawable/door_red" />
 
         <Button android:id="@+id/btn_door_out"

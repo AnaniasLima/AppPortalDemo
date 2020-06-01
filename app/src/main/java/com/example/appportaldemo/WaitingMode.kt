@@ -2,21 +2,26 @@ package com.example.appportaldemo
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.os.Handler
 import android.view.View
 import android.widget.Button
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
+import android.os.Handler
+import java.io.File
+import java.io.FileInputStream
 
 enum class VideoFase {
+    IDLE, // Não mostranda nenhum video
     WAITING_PEOPLE,
     WELCOME,
+    TEMPERATURE_MEASURE,
     HELP,
     ALCOHOL,
     FEVER,
-    ENTER
+    ENTER,
+    TEST
 }
 
 @SuppressLint("StaticFieldLeak")
@@ -26,69 +31,79 @@ object WaitingMode {
     var lastPlayedVideo: Int = -1
 
     lateinit private var videoView: VideoView
+    lateinit private var imageView: Button
     lateinit private var btnVideo: Button
     private var myActivity: AppCompatActivity? = null
 
-    lateinit var videosList: ArrayList<Media>
+    lateinit var mediasList: ArrayList<Media>
 
-    fun start(mainActivity: AppCompatActivity, view: VideoView, btnInvisivel: Button) {
+    var runningFase : VideoFase = VideoFase.IDLE
+
+    fun start(mainActivity: AppCompatActivity, view: VideoView, imagemTela: Button, btnInvisivel: Button) {
         myActivity = mainActivity
         videoView = view
+        imageView = imagemTela
         btnVideo = btnInvisivel
     }
 
     fun enterWaitingMode(fase : VideoFase) {
+
+        Timber.e("ZZ===============>>>>>>> VideoFase : ${fase} ")
         modoWaitingRunning = true
+        runningFase = fase
 
         releasePlayer()
-        videoView.visibility = View.VISIBLE
-//        btnVideo.setVisibility(View.VISIBLE)
 
         initPlayer(fase)
     }
 
     fun leaveWaitingMode() {
+
+        Timber.e("ZZ<<<<<<<< =============== VideoFase : ${runningFase} ")
+
+        runningFase = VideoFase.IDLE
+
         releasePlayer()
 
         videoView.visibility = View.GONE
+        imageView.visibility = View.GONE
         btnVideo.setVisibility(View.GONE)
+        btnVideo.isEnabled = false
         modoWaitingRunning = false
     }
 
+    fun erroFatal(str: String?) {
+        myActivity?.runOnUiThread {
+            (myActivity as MainActivity).erroFatal(str)
+        }
+    }
 
 
     private fun playNextVideo() {
-        if (++lastPlayedVideo == videosList.size ) {
+        if (++lastPlayedVideo == mediasList.size ) {
             lastPlayedVideo = 0
         }
-        Timber.i("PLAYING NEXT VIDEO $lastPlayedVideo  Video:${videosList[lastPlayedVideo]} Max:${videosList.size}")
-        setVideoFilename(videosList[lastPlayedVideo].filename)
-        videoView.start()
+        prepareMediaEnvironment(mediasList[lastPlayedVideo])
     }
 
 
     private fun initPlayer(fase: VideoFase) {
-        videoView.setVisibility(View.VISIBLE)
 
         when (fase) {
-            VideoFase.WAITING_PEOPLE -> videosList = Config.waitingVideo
-            VideoFase.WELCOME -> videosList = Config.welcomeVideo
-            VideoFase.HELP -> videosList = Config.helpVideo
-            VideoFase.ALCOHOL -> videosList = Config.alcoholVideo
-            VideoFase.FEVER -> videosList = Config.feverVideo
-            VideoFase.ENTER -> videosList = Config.enterVideo
+            VideoFase.IDLE -> return
+            VideoFase.WAITING_PEOPLE -> mediasList = Config.waitingVideo
+            VideoFase.WELCOME -> mediasList = Config.welcomeVideo
+            VideoFase.TEMPERATURE_MEASURE -> mediasList = Config.mediasTempMeasure
+            VideoFase.HELP -> mediasList = Config.helpVideo
+            VideoFase.ALCOHOL -> mediasList = Config.alcoholVideo
+            VideoFase.FEVER -> mediasList = Config.feverVideo
+            VideoFase.ENTER -> mediasList = Config.enterVideo
+            VideoFase.TEST  -> mediasList = Config.mediasTest
         }
 
         lastPlayedVideo = 0
-        setVideoFilename(videosList[lastPlayedVideo].filename)
-        videoView.setOnCompletionListener {
-            try {
-                playNextVideo()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        videoView.start()
+
+        prepareMediaEnvironment(mediasList[lastPlayedVideo])
     }
 
 
@@ -96,24 +111,105 @@ object WaitingMode {
         if ( videoView.isPlaying ) {
             videoView.stopPlayback()
         }
+        cancelRunFaseTimer()
+        imageView.visibility = View.GONE
         videoView.visibility = View.GONE
         (myActivity as MainActivity).btnInvisivel.visibility = View.GONE
     }
 
-    private fun setVideoFilename(filename:String) {
-        if ( filename.contains('/')) {
-            videoView.setVideoPath(filename)
-        } else {
-            var file = filename
-            val ind = filename.indexOfFirst { c -> (c == '.') }
-            if ( ind > 0 ) {
-                Timber.i(" ind: ${ind} ${filename.removeRange(ind, filename.length)}")
-                file = filename.removeRange(ind, filename.length)
-                Timber.i(" name: ${file}")
+    private fun prepareMediaEnvironment(media : Media) {
+
+        when (media.mediaType) {
+            Media.IMAGE -> {
+                Timber.i("ZZ----> SHOW IMAGE $lastPlayedVideo  Video: ${media.filename}")
+
+                cancelRunFaseTimer()
+
+                imageView.visibility = View.VISIBLE
+                videoView.visibility = View.GONE
+
+                myActivity?.runOnUiThread {
+                    if (media.drawable != null ) {
+                        imageView.background = media.drawable
+                    } else if ( media.resourceId != 0 ) {
+                        imageView.setBackgroundResource(media.resourceId)
+                    } else {
+                        erroFatal("Imprevisto 9.123")
+                    }
+
+                    imageView.setVisibility(View.VISIBLE)
+
+                    // Se tempo > ZERO aceita mudar imagem com click
+                    // Se ZERO : Nao sai nunca da imagem (só quem chamou WaitMode pode sair da tela)
+                    // Se < ZERO muda em tempo pre definido
+                    if ( media.tempoApresentacao > 0  ) {
+                        btnVideo.isEnabled = true
+                        btnVideo.setVisibility(View.VISIBLE)
+                        btnVideo.setOnClickListener{
+                            try {
+                                playNextVideo()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                        initRunFaseTimer(media.tempoApresentacao)
+                    } else {
+                        btnVideo.isEnabled = false
+                        btnVideo.setVisibility(View.GONE)
+                        initRunFaseTimer(media.tempoApresentacao * -1)
+                    }
+                }
             }
-            videoView.setVideoURI(Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/raw/" + file))
+            Media.VIDEO -> {
+
+                Timber.i("ZZ----> PLAYING VIDEO $lastPlayedVideo  Video: ${media.filename}")
+
+                imageView.visibility = View.GONE
+                videoView.setVisibility(View.VISIBLE)
+                videoView.visibility = View.VISIBLE
+                //        btnVideo.setVisibility(View.VISIBLE)
+
+                if ( Config.path != null) {
+                    videoView.setVideoPath(media.filename)
+                } else {
+                    videoView.setVideoURI(Uri.parse(media.filename))
+                }
+
+                videoView.setOnCompletionListener {
+                    try {
+                        playNextVideo()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                videoView.start()
+            }
         }
     }
+
+
+    var contaRunnable=0
+    var runFaseHandler: Handler = Handler()
+    var runFaseRunnable: Runnable = Runnable {
+        Timber.i("==> runFaseRunnable contaRunnable = ${++contaRunnable}")
+        playNextVideo()
+    }
+
+    private fun initRunFaseTimer(timeout:Int) {
+        if ( timeout > 0L ) {
+            Timber.i("Vai fazer postDelayed runFaseRunnable ${timeout.toLong()}")
+            runFaseHandler.postDelayed(runFaseRunnable, timeout.toLong() )
+        } else {
+            cancelRunFaseTimer()
+        }
+    }
+
+    private fun cancelRunFaseTimer() {
+        try {
+            runFaseHandler.removeCallbacks(runFaseRunnable)
+        } catch (e: Exception) {}
+    }
+
 
 
 //    private fun initRunDemoTimer() {

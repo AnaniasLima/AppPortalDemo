@@ -211,7 +211,7 @@ object ArduinoDevice {
                     if ( ! CleaningMachine.isStateMachineRunning() ) {
                         if ( CleaningMachine.startStateMachine() ) {
                             mainActivity?.runOnUiThread {
-                                WaitingMode.enterWaitingMode(VideoFase.WAITING_PEOPLE)
+//                                WaitingMode.enterWaitingMode(VideoFase.WAITING_PEOPLE)
                                 (mainActivity as MainActivity).btnStateMachine.text = "Stop\\nFSM"
                             }
                         }
