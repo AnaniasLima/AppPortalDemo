@@ -47,24 +47,17 @@ object WaitingMode {
     }
 
     fun enterWaitingMode(fase : VideoFase) {
-
         Timber.e("ZZ===============>>>>>>> VideoFase : ${fase} ")
         modoWaitingRunning = true
         runningFase = fase
-
         releasePlayer()
-
         initPlayer(fase)
     }
 
     fun leaveWaitingMode() {
-
         Timber.e("ZZ<<<<<<<< =============== VideoFase : ${runningFase} ")
-
         runningFase = VideoFase.IDLE
-
         releasePlayer()
-
         videoView.visibility = View.GONE
         imageView.visibility = View.GONE
         btnVideo.setVisibility(View.GONE)
@@ -114,7 +107,9 @@ object WaitingMode {
         cancelRunFaseTimer()
         imageView.visibility = View.GONE
         videoView.visibility = View.GONE
-        (myActivity as MainActivity).btnInvisivel.visibility = View.GONE
+        btnVideo.visibility = View.GONE
+        btnVideo.isEnabled = false
+
     }
 
     private fun prepareMediaEnvironment(media : Media) {

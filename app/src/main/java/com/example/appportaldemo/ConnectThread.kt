@@ -117,7 +117,11 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         if ( ArduinoDevice.getLogLevel(FunctionType.FX_RX)   ) {
             ScreenLog.add(LogType.TO_LOG, "RX: ${commandReceived}")
         } else {
-            Timber.d("RX: ${commandReceived}")
+            // Só vamos logar quando painel de suoporte estiver habilitado
+            if ( (Config.mainActivity!!).painel_suporte.visibility == View.VISIBLE) {
+                Timber.d("RX: ${commandReceived}")
+            }
+
         }
 
 //        println("@@@ RX ==> ${commandReceived}")
@@ -228,7 +232,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                 if ( ArduinoDevice.getLogLevel(FunctionType.FX_TX)  ) {
                     ScreenLog.add(LogType.TO_LOG, "TX: ${pktStr}")
                 } else {
-                    Timber.d("TX: $pktStr")
+                    // Só vamos logar quando painel de suoporte estiver habilitado
+                    if ( (Config.mainActivity!!).painel_suporte.visibility == View.VISIBLE) {
+                        Timber.d("TX: $pktStr")
+                    }
                 }
             }
         } catch (e: Exception) {

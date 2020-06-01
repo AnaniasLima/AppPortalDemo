@@ -19,11 +19,10 @@
 	],
 
 	"MEDIAS_TEST"          : [
-		{ "volume": 99, "filename": "fever.png", "duracao" : -3000 },
-		{ "volume": 99, "filename": "nana.png", "duracao" : 0 }
+		{ "volume": 99, "filename": "fever.png", "duracao" : 3000 },
+		{ "volume": 99, "filename": "nana.png", "duracao" : 3000 },
+		{ "volume": 99, "filename": "tela_verde.mp4"}
 	],
-
-
 
 	"WAITING_PEOPLE"          : [
 		{ "volume": 99, "filename": "bem_vindo.png", "duracao" : 60000  },

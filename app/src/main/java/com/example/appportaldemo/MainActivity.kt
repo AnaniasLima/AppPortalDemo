@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     var temperaturaMedida: Float = 0F
     var contaMagica = 0
     var jaViuUSB:Boolean=false
+
     var primeiraConexaoHandler: Handler = Handler()
     var primeiraConexaoRunnable: Runnable = Runnable {
         ArduinoDevice.connect()
@@ -118,11 +119,11 @@ class MainActivity : AppCompatActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+//        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
 
         super.onCreate(savedInstanceState)
 
-        // 1024x600 resolução
+        // 1024x600 Resolução HOW 705G
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
@@ -134,17 +135,17 @@ class MainActivity : AppCompatActivity() {
 
 //        validateConfigLocalization()
 
-
-
         Config.start(this, applicationContext)
         ScreenLog.start(this, applicationContext, log_recycler_view, history_recycler_view)
         WaitingMode.start(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
         ArduinoDevice.start(this, applicationContext)
         CleaningMachine.start(this, applicationContext)
+        WaitingModeThread.initialSetting(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
 
         xxx()
         setButtonListeners()
 
+        WaitingModeThread.start()
     }
 
     fun xxx() {
@@ -242,11 +243,19 @@ class MainActivity : AppCompatActivity() {
 
         btnMagico.setOnClickListener{
 //            WaitingMode.enterWaitingMode(VideoFase.TEMPERATURE_MEASURE)
+
+            contaMagica++
             Timber.e("contaMagica=${contaMagica}")
-            if ( contaMagica++ > 5 ) {
+
+            if ( contaMagica == 1) {
+                WaitingModeThread?.newEnterWaitingMode(1, Config.waitingVideo)
+            } else {
+                WaitingModeThread?.newLeaveWaitingMode()
+            }
+            if ( contaMagica > 5 ) {
                 painel_inferior.visibility=View.VISIBLE
             }
-            if ( contaMagica++ > 10 ) {
+            if ( contaMagica > 10 ) {
                 painel_suporte.visibility=View.VISIBLE
             }
         }

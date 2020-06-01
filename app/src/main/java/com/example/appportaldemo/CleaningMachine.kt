@@ -129,6 +129,8 @@ object CleaningMachine {
         }
     }
 
+
+
     private fun initRunFaseTimer(timeout:Long) {
         if ( timeout > 0L ) {
             runFaseHandler.postDelayed(runFaseRunnable, timeout )
@@ -357,16 +359,34 @@ object CleaningMachine {
     }
 
     fun aguardando(fase: VideoFase) {
-
-        mainActivity?.runOnUiThread {
-            if ( fase == VideoFase.IDLE) {
-                WaitingMode.leaveWaitingMode()
-                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.full_screen_background )
-            } else {
-                WaitingMode.enterWaitingMode(fase)
-                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+        if ( fase == VideoFase.IDLE) {
+            WaitingModeThread.newLeaveWaitingMode()
+        } else {
+            var mediasList: ArrayList<Media>? = null
+            when (fase) {
+                VideoFase.IDLE -> return
+                VideoFase.WAITING_PEOPLE -> mediasList = Config.waitingVideo
+                VideoFase.WELCOME -> mediasList = Config.welcomeVideo
+                VideoFase.TEMPERATURE_MEASURE -> mediasList = Config.mediasTempMeasure
+                VideoFase.HELP -> mediasList = Config.helpVideo
+                VideoFase.ALCOHOL -> mediasList = Config.alcoholVideo
+                VideoFase.FEVER -> mediasList = Config.feverVideo
+                VideoFase.ENTER -> mediasList = Config.enterVideo
+                VideoFase.TEST  -> mediasList = Config.mediasTest
             }
+            WaitingModeThread.newEnterWaitingMode(fase.ordinal, Config.mediasTest)
         }
+
+
+//        mainActivity?.runOnUiThread {
+//            if ( fase == VideoFase.IDLE) {
+//                WaitingMode.leaveWaitingMode()
+//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.full_screen_background )
+//            } else {
+//                WaitingMode.enterWaitingMode(fase)
+//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+//            }
+//        }
     }
 
     fun on_WAITING_PEOPLE(flag : InOut) {

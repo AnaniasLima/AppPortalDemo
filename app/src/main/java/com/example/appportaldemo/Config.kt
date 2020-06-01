@@ -82,7 +82,7 @@ object Config {
         Timber.e( "=========== path=$path    file = ${file}")
 
         // TODO: Ajustar para pedir permissao para usuário ao invez de habilitar permissao na mão
-        if ( ! loadConfig("config.json",  configInputStream )  ) {
+        if ( ! loadConfig(configInputStream )  ) {
             mainActivity?.runOnUiThread {
                 (mainActivity as MainActivity).erroFatal(Config.msgErro)
             }
@@ -91,7 +91,7 @@ object Config {
 
 
 
-    private fun loadConfig( file: String, inputStream: InputStream) : Boolean {
+    private fun loadConfig( inputStream: InputStream) : Boolean {
         val jsonObject : JSONObject?
         var curItem: String
 

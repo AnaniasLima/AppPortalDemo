@@ -294,8 +294,8 @@ object ArduinoDevice {
         appContext!!.registerReceiver(broadcastReceiver, filter)
     }
 
-    private var rxLogEnabled : Boolean = true
-    private var txLogEnabled : Boolean = true
+    private var rxLogEnabled : Boolean = false
+    private var txLogEnabled : Boolean = false
 
     fun logRX(enabled:Boolean) {
         rxLogEnabled = enabled
