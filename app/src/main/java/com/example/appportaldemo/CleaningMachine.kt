@@ -9,10 +9,22 @@ import android.os.Handler
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.appportaldemo.WaitingModeThread.changeVideo
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.*
 
+enum class VideoFase {
+    IDLE, // Não mostranda nenhum video
+    WAITING_PEOPLE,
+    WELCOME,
+    TEMPERATURE_MEASURE,
+    HELP,
+    ALCOHOL,
+    FEVER,
+    ENTER,
+    TEST
+}
 
 enum class CleaningMachineState  {
     UNKNOW,
@@ -143,7 +155,9 @@ object CleaningMachine {
         try {
             flagTimeout = false
             runFaseHandler.removeCallbacks(runFaseRunnable)
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            Timber.i("Ops Exception in cancelRunFaseTimer")
+        }
     }
 
 
@@ -193,7 +207,7 @@ object CleaningMachine {
                 (mainActivity as MainActivity).log_recycler_view.visibility = View.INVISIBLE
             }
 
-            WaitingMode.leaveWaitingMode()
+            WaitingModeThread.newLeaveWaitingMode()
             return true
         } else {
             return false
@@ -358,35 +372,40 @@ object CleaningMachine {
         }
     }
 
-    fun aguardando(fase: VideoFase) {
+
+
+    fun getMedias(fase: VideoFase ) : ArrayList<Media>? {
+        var mediasList: ArrayList<Media>? = null
+
+        when (fase) {
+            VideoFase.IDLE -> {}
+            VideoFase.WAITING_PEOPLE -> mediasList = Config.waitingVideo
+            VideoFase.WELCOME -> mediasList = Config.welcomeVideo
+            VideoFase.TEMPERATURE_MEASURE -> mediasList = Config.mediasTempMeasure
+            VideoFase.HELP -> mediasList = Config.helpVideo
+            VideoFase.ALCOHOL -> mediasList = Config.alcoholVideo
+            VideoFase.FEVER -> mediasList = Config.feverVideo
+            VideoFase.ENTER -> mediasList = Config.enterVideo
+            VideoFase.TEST  -> mediasList = Config.mediasTest
+        }
+        return(mediasList)
+    }
+
+
+    fun aguardando(fase: VideoFase, indicadorFundo: Button? = null) {
+
+        Timber.e("aguardando fase: ${fase} ")
+
         if ( fase == VideoFase.IDLE) {
             WaitingModeThread.newLeaveWaitingMode()
+//            buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.full_screen_background )
         } else {
-            var mediasList: ArrayList<Media>? = null
-            when (fase) {
-                VideoFase.IDLE -> return
-                VideoFase.WAITING_PEOPLE -> mediasList = Config.waitingVideo
-                VideoFase.WELCOME -> mediasList = Config.welcomeVideo
-                VideoFase.TEMPERATURE_MEASURE -> mediasList = Config.mediasTempMeasure
-                VideoFase.HELP -> mediasList = Config.helpVideo
-                VideoFase.ALCOHOL -> mediasList = Config.alcoholVideo
-                VideoFase.FEVER -> mediasList = Config.feverVideo
-                VideoFase.ENTER -> mediasList = Config.enterVideo
-                VideoFase.TEST  -> mediasList = Config.mediasTest
+            var mediasList = getMedias(fase)
+            if ( mediasList != null) {
+                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+                WaitingModeThread.newEnterWaitingMode(fase.ordinal, mediasList, indicadorFundo)
             }
-            WaitingModeThread.newEnterWaitingMode(fase.ordinal, Config.mediasTest)
         }
-
-
-//        mainActivity?.runOnUiThread {
-//            if ( fase == VideoFase.IDLE) {
-//                WaitingMode.leaveWaitingMode()
-//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.full_screen_background )
-//            } else {
-//                WaitingMode.enterWaitingMode(fase)
-//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
-//            }
-//        }
     }
 
     fun on_WAITING_PEOPLE(flag : InOut) {
@@ -398,7 +417,8 @@ object CleaningMachine {
                 desiredState = receivedState
                 initRunFaseTimer(0L)
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
-//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.bem_vindo)
+
+                Timber.i("aguardando(VideoFase.WAITING_PEOPLE) em 111 (on_WAITING_PEOPLE)")
                 aguardando(VideoFase.WAITING_PEOPLE)
             }
 
@@ -407,25 +427,10 @@ object CleaningMachine {
                 if (flag == InOut.OUT) cancelRunFaseTimer()
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.OFF)
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+                Timber.i("aguardando(VideoFase.IDLE) em 222 - on_WAITING_PEOPLE ${flag}")
                 aguardando(VideoFase.IDLE)
+
                 ligaIndicadorSaida(0)
-            }
-        }
-    }
-
-    fun on_CALL_ATENDENT(flag : InOut) {
-        Timber.i("ZZ on_CALL_ATENDENT ${flag} desiredState=$desiredState receivedState=$receivedState")
-        when(flag) {
-            InOut.IN -> {
-                desiredState = receivedState
-                waitingThermometer = true
-                aguardando(VideoFase.HELP)
-            }
-
-            InOut.OUT,
-            InOut.TIMEOUT -> {
-                if (flag == InOut.OUT) cancelRunFaseTimer()
-                aguardando(VideoFase.IDLE)
             }
         }
     }
@@ -441,14 +446,13 @@ object CleaningMachine {
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).temperatura_seekBar.isEnabled = true
                 }
-
                 aguardando(VideoFase.TEMPERATURE_MEASURE)
             }
 
             InOut.OUT ,
             InOut.TIMEOUT -> {
-
-                if (flag == InOut.OUT) cancelRunFaseTimer()
+                Timber.i("vai chamar aguardando(VideoFase.IDLE) em 333 on_WAITING_THERMOMETER ${flag}")
+                aguardando(VideoFase.IDLE)
 
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).temperatura_seekBar.isEnabled = false
@@ -466,13 +470,12 @@ object CleaningMachine {
                         changeCurrentState(CleaningMachineState.FEVER_PROCEDURE)
                     }
                 }
-
-                aguardando(VideoFase.IDLE)
             }
         }
     }
 
     fun on_ALCOHOL_PROCESS(flag : InOut) {
+        var timeout = 30000
         Timber.i("ZZ on_ALCOHOL_PROCESS ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
@@ -481,13 +484,14 @@ object CleaningMachine {
                     temperaturaMedida = temperaturaFake
                 }
                 desiredState = receivedState
-                initRunFaseTimer(30000L )
+                initRunFaseTimer(timeout.toLong() )
 
                 // Prepara botão de fundo com a temperatura medida
-                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
-                buttonAdjust((mainActivity as MainActivity).btn_sem_febre, true, str=String.format("%.2f°", temperaturaMedida))
+//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+//                buttonAdjust((mainActivity as MainActivity).btn_sem_febre, true, str=String.format("%.2f°", temperaturaMedida))
                 buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_on)
-//                WaitingMode.enterWaitingMode(VideoFase.ALCOHOL)
+                buttonAdjust((mainActivity as MainActivity).indicador_temperatura_sem_febre, true, str=String.format("%.2f°", temperaturaMedida))
+                aguardando(VideoFase.ALCOHOL, (mainActivity as MainActivity).indicador_temperatura_sem_febre)
             }
 
             InOut.OUT,
@@ -762,6 +766,26 @@ object CleaningMachine {
                     ScreenLog.add(LogType.TO_HISTORY, "Faturou ${valorFatura}")
                 }
                 changeCurrentState(CleaningMachineState.WAITING_PERSON)
+            }
+        }
+    }
+
+
+    fun on_CALL_ATENDENT(flag : InOut) {
+        Timber.i("ZZ on_CALL_ATENDENT ${flag} desiredState=$desiredState receivedState=$receivedState")
+        when(flag) {
+            InOut.IN -> {
+                desiredState = receivedState
+                waitingThermometer = true
+                aguardando(VideoFase.HELP)
+            }
+
+            InOut.OUT,
+            InOut.TIMEOUT -> {
+                if (flag == InOut.OUT) cancelRunFaseTimer()
+                Timber.i("vai chamar aguardando(VideoFase.IDLE) em 444 on_CALL_ATENDENT ${flag}")
+                aguardando(VideoFase.IDLE)
+
             }
         }
     }

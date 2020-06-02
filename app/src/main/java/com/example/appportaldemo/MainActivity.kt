@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         Config.start(this, applicationContext)
         ScreenLog.start(this, applicationContext, log_recycler_view, history_recycler_view)
-        WaitingMode.start(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
+//        WaitingMode.start(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
         ArduinoDevice.start(this, applicationContext)
         CleaningMachine.start(this, applicationContext)
         WaitingModeThread.initialSetting(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
@@ -242,16 +242,17 @@ class MainActivity : AppCompatActivity() {
 
 
         btnMagico.setOnClickListener{
-//            WaitingMode.enterWaitingMode(VideoFase.TEMPERATURE_MEASURE)
-
             contaMagica++
             Timber.e("contaMagica=${contaMagica}")
 
-            if ( contaMagica == 1) {
-                WaitingModeThread?.newEnterWaitingMode(1, Config.waitingVideo)
-            } else {
-                WaitingModeThread?.newLeaveWaitingMode()
-            }
+//            if ( contaMagica == 1) {
+//                WaitingModeThread.newEnterWaitingMode(5, Config.alcoholVideo, indicador_temperatura_sem_febre)
+//            } else {
+//                WaitingModeThread.newLeaveWaitingMode()
+//            }
+
+
+
             if ( contaMagica > 5 ) {
                 painel_inferior.visibility=View.VISIBLE
             }

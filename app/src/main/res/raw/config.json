@@ -33,9 +33,9 @@
 		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" }
 	],
 	"CALL_HELP"              : [ { "volume": 99, "filename": "procure_ajuda.png"} ],
-	"ALCOHOL_INSTRUCTION"    : [ 
-		{ "volume": 99, "filename": "tela_verde.mp4"},
-		{ "volume": 99, "filename": "instrucao_uso_alcool.mp4"} 
+	"ALCOHOL_INSTRUCTION"    : [
+      { "volume": 99, "filename": "no_fever1.png", "duracao" : 2000},
+      { "volume": 99, "filename": "no_fever2.png", "duracao" : 2000}
 	],
 	"FEVER_INSTRUCTION"      : [ 
 		{ "volume": 99, "filename": "tela_vermelha.mp4"},

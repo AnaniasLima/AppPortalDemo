@@ -104,7 +104,7 @@ object Config {
         try {
             jsonObject = JSONObject(readJsonFileIns(inputStream))
         } catch (e: Exception) {
-            msgErro = "Invalid file"
+            msgErro = "Arquivo Config.json inválido"
             Timber.e("%s: %s", msgErro, e.message.toString())
             return false
         }

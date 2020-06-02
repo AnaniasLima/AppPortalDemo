@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import timber.log.Timber
 import android.os.Handler
 import android.view.View
+import kotlinx.android.synthetic.main.activity_main.*
+
 
 @SuppressLint("StaticFieldLeak")
 object  WaitingModeThread : Thread() {
@@ -82,13 +84,16 @@ object  WaitingModeThread : Thread() {
         } catch (e: Exception) {}
     }
 
+    var backgroundText : Button? = null
 
-    fun newEnterWaitingMode(fase: Int, medias: ArrayList<Media>) {
+    fun newEnterWaitingMode(fase: Int, medias: ArrayList<Media>, indicadorFundo : Button?) {
 
         if ( fase == 0) {
             newLeaveWaitingMode()
             return
         }
+
+        backgroundText = indicadorFundo
 
         modoWaitingRunning = true
 
@@ -123,7 +128,12 @@ object  WaitingModeThread : Thread() {
             imageView.visibility = View.GONE
             invisibleButton.visibility = View.GONE
             invisibleButton.isEnabled = false
+            if ( backgroundText != null ) {
+                backgroundText!!.visibility = View.GONE
+            }
         }
+
+        backgroundText = null
         modoWaitingRunning = false
         runningFase = 0
     }
@@ -147,6 +157,7 @@ object  WaitingModeThread : Thread() {
                     videoView.visibility = View.GONE
                     imageView.visibility = View.VISIBLE
 
+
                     if (media.drawable != null ) {
                         imageView.background = media.drawable
                     } else if ( media.resourceId != 0 ) {
@@ -167,6 +178,10 @@ object  WaitingModeThread : Thread() {
                         invisibleButton.visibility = View.GONE
                         initRunFaseTimer(media.tempoApresentacao * -1)
                     }
+
+                    if ( backgroundText != null) {
+                        backgroundText!!.visibility = View.VISIBLE
+                    }
                 }
             }
 
@@ -185,6 +200,10 @@ object  WaitingModeThread : Thread() {
                         videoView.setVideoPath(media.filename)
                     } else {
                         videoView.setVideoURI(Uri.parse(media.filename))
+                    }
+
+                    if ( backgroundText != null) {
+                        backgroundText!!.visibility = View.VISIBLE
                     }
 
                     videoView.setZOrderOnTop(true)

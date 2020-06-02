@@ -36,6 +36,13 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.30" />
 
+        <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_sem_febre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.80" />
+
+
         <Button android:id="@+id/btn_fever_show_value"
             android:text=""
             android:layout_width="match_parent"
@@ -47,6 +54,9 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/gl_febre"
             android:background="@color/red"/>
+
+
+
         <Button android:id="@+id/btn_fever_show_message"
             android:text=""
             android:layout_width="match_parent"
@@ -58,8 +68,10 @@
             app:layout_constraintTop_toTopOf="@+id/gl_febre"
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@color/red"/>
+
+
         <Button android:id="@+id/btn_sem_febre"
-            android:text=""
+            android:text="99.99"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="invisible"
@@ -67,6 +79,21 @@
             android:gravity="center"
             android:textSize="120dp"
             android:background="?android:selectableItemBackground"/>
+
+        <Button android:id="@+id/indicador_temperatura_sem_febre"
+            android:text="99.99"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:enabled="true"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:textSize="120dp"
+            app:layout_constraintBottom_toBottomOf="@+id/gl_sem_febre"
+            android:background="?android:selectableItemBackground"/>
+
+
+
 
         <Button  android:id="@+id/btn_aguardando_conexao"
             android:text="Aguardando Conexão"
@@ -156,7 +183,6 @@
             android:enabled="true"
             app:layout_constraintEnd_toEndOf="parent"
             android:background="?android:selectableItemBackground"/>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
