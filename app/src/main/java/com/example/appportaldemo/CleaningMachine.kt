@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.*
+import javax.crypto.Mac
 
 
 enum class MachineState  {
@@ -40,6 +41,7 @@ enum class CleaningMachineCommand  {
     STATUS_RQ,
     FW_EJECT,
     FW_LED,
+    FW_ALARM,
     FW_DEMO;
 }
 
@@ -313,6 +315,21 @@ object CleaningMachine {
         }
     }
 
+    fun alarmeFebre(tipo:Int) {
+        if ( (Config.alarmeFebre > 0) &&  (Config.alarmeFebre <= 9) ) {
+            when (tipo) {
+                1 -> {
+                    ScreenLog.add(LogType.TO_HISTORY, "Acionando Alarme Febre")
+                    ArduinoDevice.requestToSend(EventType.FW_ALARM, "${Config.alarmeFebre},1")
+                }
+                0 -> {
+                    ScreenLog.add(LogType.TO_HISTORY, "Acionando Alarme Febre")
+                    ArduinoDevice.requestToSend(EventType.FW_ALARM, "${Config.alarmeFebre},0")
+                }
+            }
+        }
+    }
+
     fun ligaIndicadorSaida(tipo:Int) {
         when (tipo) {
             0 -> {
@@ -513,11 +530,13 @@ object CleaningMachine {
 
                 buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
                 aguardando(MachineState.FEVER_PROCEDURE, bma_mostra_temperatura)
+                alarmeFebre(1)
             }
 
             InOut.OUT,
             InOut.TIMEOUT-> {
                 aguardando(MachineState.IDLE)
+                alarmeFebre(0)
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true)
 
                 if (flag ==  InOut.TIMEOUT) {
@@ -575,9 +594,61 @@ object CleaningMachine {
 
             InOut.TIMEOUT -> {
                 aguardando(MachineState.IDLE)
-                changeCurrentState(MachineState.CLEANING_PROCESS_2, FROM_OUT)
+                var nextState = nextCleaningProcess()
+                changeCurrentState(nextState, FROM_OUT)
             }
         }
+    }
+
+    fun nextCleaningProcess() : MachineState {
+
+        var nextState = receivedState
+
+        if        ( receivedState == MachineState.ALCOHOL_PROCEDURE ) {
+            nextState =  MachineState.WAITING_ENTER
+        } else if ( receivedState == MachineState.WAITING_ENTER ) {
+            nextState =  MachineState.CLEANING_PROCESS_1
+        } else if ( receivedState == MachineState.CLEANING_PROCESS_1 ) {
+            nextState =  MachineState.CLEANING_PROCESS_2
+        } else if ( receivedState == MachineState.CLEANING_PROCESS_2 ) {
+            nextState =  MachineState.CLEANING_PROCESS_3
+        } else if ( receivedState == MachineState.CLEANING_PROCESS_3 ) {
+            nextState =  MachineState.WAITING_FINISH
+        }
+
+
+
+        if ( nextState == MachineState.WAITING_ENTER ) {
+            if ((Config.capacidadeReservatorio1 > 0) || (Config.capacidadeReservatorio2 > 0) || (Config.capacidadeReservatorio3 > 0) ) {
+                return (MachineState.WAITING_ENTER)
+            }
+            nextState =  MachineState.CLEANING_PROCESS_1
+        }
+
+        if ( nextState ==  MachineState.CLEANING_PROCESS_1 )  {
+            if ( Config.capacidadeReservatorio1 > 0) return(MachineState.CLEANING_PROCESS_1)
+            nextState =  MachineState.CLEANING_PROCESS_2
+        }
+
+        if ( nextState ==  MachineState.CLEANING_PROCESS_2 )  {
+            if ( Config.capacidadeReservatorio2 > 0) return(MachineState.CLEANING_PROCESS_2)
+            nextState =  MachineState.CLEANING_PROCESS_3
+        }
+
+        if ( nextState ==  MachineState.CLEANING_PROCESS_3 )  {
+            if ( Config.capacidadeReservatorio3 > 0) return(MachineState.CLEANING_PROCESS_3)
+            nextState =  MachineState.WAITING_FINISH
+        }
+
+
+        if ( nextState ==  MachineState.WAITING_FINISH )  {
+            if ( pessoaDentro ) {
+                return(MachineState.WAITING_FINISH)
+            }
+        }
+
+
+        return(MachineState.GRANA_BOLSO)
     }
 
     fun on_CLEANING_PROCESS_2(flag : InOut) {
@@ -597,7 +668,8 @@ object CleaningMachine {
 
             InOut.TIMEOUT -> {
                 aguardando(MachineState.IDLE)
-                changeCurrentState(MachineState.CLEANING_PROCESS_3, FROM_OUT)
+                var nextState = nextCleaningProcess()
+                changeCurrentState(nextState, FROM_OUT)
             }
         }
     }
@@ -819,6 +891,8 @@ object CleaningMachine {
 
     fun processReceivedResponse(response: EventResponse) {
 
+        var nextState = receivedState
+
         when (response.eventType) {
 
             EventType.FW_DUMMY -> {
@@ -872,6 +946,7 @@ object CleaningMachine {
 
                     when (receivedState) {
 
+
                         MachineState.IDLE-> {
                             Timber.e("Não deveria chegar em processReceivedResponse com MachineState.IDLE")
                         }
@@ -914,13 +989,15 @@ object CleaningMachine {
                         MachineState.ALCOHOL_PROCEDURE -> {
                             if ( pessoaEmSensor(Sensor.ALCOHOL) ) {
                                 Timber.e("WWW 005 testou e disse que tem mão no Alcool vai para WAITING_ENTER")
-                                changeCurrentState(MachineState.WAITING_ENTER, FROM_EXT)
+                                nextState = nextCleaningProcess()
+                                changeCurrentState(nextState, FROM_EXT)
                             }
                         }
 
                         MachineState.WAITING_ENTER -> {
                             if ( pessoaEmSensor(Sensor.ENTRADA) ) {
-                                changeCurrentState(MachineState.CLEANING_PROCESS_1, FROM_EXT)
+                                nextState = nextCleaningProcess()
+                                changeCurrentState(nextState, FROM_EXT)
                                 pessoaDentro = true
                             }
                         }
@@ -932,7 +1009,8 @@ object CleaningMachine {
                             }
 
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
+                                nextState = nextCleaningProcess()
+                                changeCurrentState(nextState, FROM_EXT)
                             }
                         }
 
@@ -941,7 +1019,8 @@ object CleaningMachine {
                                 pessoaDentro = false
                             }
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
+                                nextState = nextCleaningProcess()
+                                changeCurrentState(nextState, FROM_EXT)
                             }
                         }
 
@@ -950,7 +1029,8 @@ object CleaningMachine {
                                 pessoaDentro = false
                             }
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
+                                nextState = nextCleaningProcess()
+                                changeCurrentState(nextState, FROM_EXT)
                             }
                         }
 

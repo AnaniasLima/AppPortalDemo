@@ -170,7 +170,15 @@ object  WaitingModeThread : Thread() {
             if ( Config.path != null) {
                 mediaPlayer = MediaPlayer()
                 if ( mediaPlayer != null  ) {
-                    mediaPlayer!!.setDataSource(media.filename)
+                    mediaPlayer!!.setDataSource (media.filename)
+                    mediaPlayer!!.prepare()
+
+
+//                    public void setDataSource(String path)
+//                    throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+//                        setDataSource(path, null, null);
+//                    }
+
                 }
             } else {
                 mediaPlayer = MediaPlayer.create(Config.appContext, Uri.parse(media.filename))

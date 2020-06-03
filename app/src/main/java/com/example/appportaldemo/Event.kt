@@ -95,6 +95,7 @@ enum class EventType(val type: Int, val command: String) {
     FW_LED(6, "fw_led"),
     FW_CALIBRATE(5, "fw_calibrate"),
     FW_SENSOR1( 10, "fw_sensor1"),
+    FW_ALARM( 11, "fw_alarm"),
     FW_DUMMY(998, "fw_dummy"),
 
     FW_NACK(999, "fw_nack");

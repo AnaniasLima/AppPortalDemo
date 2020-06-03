@@ -11,6 +11,15 @@
 	"SENSOR3_VALUE": 50,
 	"SENSOR4_VALUE": 50,
 
+	"ALARME_FEBRE" : "0",
+
+	"RESERVATORIO_GEL" : 500,
+	"RESERVATORIO_1"   : 500,
+	"RESERVATORIO_2"   : 500,
+	"RESERVATORIO_3"   : 0,
+
+
+
 	"IDLE"      : [ { "volume": 99, "filename": "nana.png"} ],
 	"UNKNOWN"      : [ { "volume": 99, "filename": "nana.png"} ],
 	"RESTART"      : [ { "volume": 99, "filename": "nana.png"} ],
@@ -22,6 +31,7 @@
 	],
 
 	"WAITING_THERMOMETER"          : [
+		{ "volume": 99, "filename": "temperatura.mp3" },
 		{ "volume": 99, "filename": "medindo_temperatura3.png", "duracao" : -1000 },
 		{ "volume": 99, "filename": "medindo_temperatura2.png", "duracao" : -1000 },
 		{ "volume": 99, "filename": "medindo_temperatura1.png", "duracao" : -1000 },
@@ -34,17 +44,17 @@
 	"FEVER_PROCEDURE"      : [ { "volume": 99, "filename": "fever.png" } 	],
 
 	"ALCOHOL_PROCEDURE"    : [
+		{ "volume": 99, "filename": "entrada_use_gel.mp3" },
 		{ "volume": 99, "filename": "no_fever1.png", "duracao" :  1500},
 		{ "volume": 99, "filename": "no_fever2.png", "duracao" : 10000}
 	],
 
 	"WAITING_ENTER"      : [
-		{ "volume": 99, "filename": "entrada.amr" },
 		{ "volume": 99, "filename": "entrada_liberada.png"}
 	],
 
 	"CLEANING_PROCESS_1"      : [
-		{ "volume": 99, "filename": "aguarde.amr" },
+		{ "volume": 99, "filename": "aguarde.mp3" },
 		{ "volume": 99, "filename": "aguarde_fase1.png"}
 	],
 	"CLEANING_PROCESS_2"      : [ { "volume": 99, "filename": "aguarde_fase2.png"} ],
@@ -52,17 +62,14 @@
 
 
 	"WAITING_FINISH"      : [
-		{ "volume": 99, "filename": "saida.amr" },
+		{ "volume": 99, "filename": "saida.mp3" },
 		{ "volume": 99, "filename": "saida_liberada.png"}
 	],
 
 	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "grana_bolso.png"} ],
 
 	"MEDIAS_TEST"          : [
-		{ "volume": 99, "filename": "audio3.amr" },
-		{ "volume": 99, "filename": "fever.png", "duracao" : 3000 },
-		{ "volume": 99, "filename": "fever.png", "duracao" : 3000 },
-		{ "volume": 99, "filename": "nana.png", "duracao" : 3000 },
-		{ "volume": 99, "filename": "tela_verde.mp4"}
+		{ "volume": 99, "filename": "apresentacao.mp3" },
+		{ "volume": 99, "filename": "nana.png", "duracao" : 3000 }
 	]
 }

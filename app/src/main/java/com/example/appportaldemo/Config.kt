@@ -16,6 +16,14 @@ enum class ConfigType(val type: Int, val token: String) {
     SENSOR3_VALUE        (3, "SENSOR3_VALUE"),
     SENSOR4_VALUE        (4, "SENSOR4_VALUE"),
 
+
+    RESERVATORIO_GEL      (5, "RESERVATORIO_GEL"),
+    RESERVATORIO_1        (6, "RESERVATORIO_1"),
+    RESERVATORIO_2        (7, "RESERVATORIO_2"),
+    RESERVATORIO_3        (8, "RESERVATORIO_3"),
+
+    ALARME_FEBRE          (9, "ALARME_FEBRE"),
+
     IDLE                 (10, "IDLE"),
     UNKNOWN              (11, "UNKNOWN"),
     RESTART              (12, "RESTART"),
@@ -60,9 +68,16 @@ object Config {
     var testMedias               = ArrayList<Media>()
 
     var sensor1DistanciaDetecta: Int = 50
-        var sensor2DistanciaDetecta: Int = 50
-        var sensor3DistanciaDetecta: Int = 50
-        var sensor4DistanciaDetecta: Int = 50
+    var sensor2DistanciaDetecta: Int = 50
+    var sensor3DistanciaDetecta: Int = 50
+    var sensor4DistanciaDetecta: Int = 50
+
+    var capacidadeReservatorioGel: Int = 0
+    var capacidadeReservatorio1: Int = 0
+    var capacidadeReservatorio2: Int = 0
+    var capacidadeReservatorio3: Int = 0
+
+    var alarmeFebre : Int = 0
 
     init {
         Timber.e("===== =====  ==== Init 2222")
@@ -131,6 +146,16 @@ object Config {
                     ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta    = jsonObject.getInt(value.token)
                     ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta    = jsonObject.getInt(value.token)
 
+                    ConfigType.RESERVATORIO_GEL         -> capacidadeReservatorioGel  = jsonObject.getInt(value.token)
+                    ConfigType.RESERVATORIO_1           -> capacidadeReservatorio1    = jsonObject.getInt(value.token)
+                    ConfigType.RESERVATORIO_2           -> capacidadeReservatorio2    = jsonObject.getInt(value.token)
+                    ConfigType.RESERVATORIO_3           -> capacidadeReservatorio3    = jsonObject.getInt(value.token)
+
+                    ConfigType.ALARME_FEBRE             -> alarmeFebre                = jsonObject.getInt(value.token)
+
+
+
+
                     ConfigType.IDLE                    -> idleMedias                 = getMedias(jsonObject.getJSONArray(value.token))
                     ConfigType.UNKNOWN                 -> unknownMedias              = getMedias(jsonObject.getJSONArray(value.token))
                     ConfigType.RESTART                 -> restartMedias              = getMedias(jsonObject.getJSONArray(value.token))
@@ -167,6 +192,14 @@ object Config {
                 ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
                 ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
                 ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
+
+
+                ConfigType.RESERVATORIO_GEL        -> Timber.i("%-20s = %d", value.token, capacidadeReservatorioGel)
+                ConfigType.RESERVATORIO_1          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio1)
+                ConfigType.RESERVATORIO_2          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio2)
+                ConfigType.RESERVATORIO_3          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio3)
+
+                ConfigType.ALARME_FEBRE            -> Timber.i("%-20s = %s", value.token, alarmeFebre)
 
                 ConfigType.IDLE                -> { idleMedias               .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
                 ConfigType.UNKNOWN             -> { unknownMedias            .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }

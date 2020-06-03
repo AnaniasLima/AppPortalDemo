@@ -146,6 +146,9 @@ object ArduinoDevice {
             EventType.FW_LED -> {
 //                Timber.e("FW_LED =====> ${eventResponse.toString()}")
             }
+            EventType.FW_ALARM -> {
+//                Timber.e("FW_ALARM =====> ${eventResponse.toString()}")
+            }
             else -> {
                 println("===> Falta tratar resposta para comando ${eventResponse.eventType} ")
             }
@@ -264,6 +267,9 @@ object ArduinoDevice {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_LED -> {
+                        ret = connectThread!!.requestToSend(eventType, action=action)
+                    }
+                    EventType.FW_ALARM -> {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_DUMMY -> {
