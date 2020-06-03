@@ -1,49 +1,32 @@
 package com.example.appportaldemo
 
-import android.R.attr.button
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.example.appportaldemo.WaitingModeThread.changeVideo
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.*
 
-enum class VideoFase {
-    IDLE, // Não mostranda nenhum video
-    WAITING_PEOPLE,
-    WELCOME,
-    TEMPERATURE_MEASURE,
-    HELP,
-    ALCOHOL,
-    FEVER,
-    ENTER,
-    TEST
-}
 
-enum class CleaningMachineState  {
-    UNKNOW,
+enum class MachineState  {
+    IDLE,
     RESTART,
-//    OUT_OF_SERVICE,
-    WAITING_PERSON,
+    UNKNOWN,
+    WAITING_PEOPLE,
     WAITING_THERMOMETER,
-    CALL_ATENDENT,
+    CALL_HELP,
     FEVER_PROCEDURE,
-    ALCOHOL_PROCESS,
+    ALCOHOL_PROCEDURE,
     WAITING_ENTER,
     CLEANING_PROCESS_1,
     CLEANING_PROCESS_2,
     CLEANING_PROCESS_3,
     WAITING_FINISH,
-    GRANA_BOLSO,
-
-//    RUNNING_DEMO,
-    PLAYING;
+    GRANA_BOLSO;
 }
 
 enum class InOut  {
@@ -74,14 +57,17 @@ object CleaningMachine {
     private var SELECTED_TIME_TO_QUESTION = DEFAULT_TIME_TO_QUESTION
     private const val WAIT_TIME_TO_RESPONSE = 300L
     private const val MAX_RUN_DEMO_TIMEOUT = 30000L
+    private const val FROM_OUT = true
+    private const val FROM_EXT = false
+
 
     private var mainActivity: AppCompatActivity? = null
     private var appContext: Context? = null
 
     private var cleaningMachineHandler = Handler()
 
-    private var desiredState: CleaningMachineState = CleaningMachineState.RESTART
-    private var receivedState: CleaningMachineState = CleaningMachineState.UNKNOW
+    private var desiredState: MachineState = MachineState.RESTART
+    private var receivedState: MachineState = MachineState.UNKNOWN
     private var countCommandsToDesiredState = 0
 
     private var inBusyStateCounter = 0
@@ -121,23 +107,21 @@ object CleaningMachine {
     var runFaseRunnable: Runnable = Runnable {
         flagTimeout = true
         when (receivedState ) {
-            CleaningMachineState.UNKNOW -> on_UNKNOW(InOut.TIMEOUT)
-            CleaningMachineState.RESTART -> on_RESTART(InOut.TIMEOUT)
-            CleaningMachineState.WAITING_PERSON -> on_WAITING_PEOPLE(InOut.TIMEOUT)
-            CleaningMachineState.WAITING_THERMOMETER -> on_WAITING_THERMOMETER(InOut.TIMEOUT)
-            CleaningMachineState.CALL_ATENDENT   -> on_CALL_ATENDENT(InOut.TIMEOUT)
-            CleaningMachineState.ALCOHOL_PROCESS -> on_ALCOHOL_PROCESS(InOut.TIMEOUT)
-            CleaningMachineState.FEVER_PROCEDURE -> on_FEVER_PROCEDURE(InOut.TIMEOUT)
-            CleaningMachineState.WAITING_ENTER -> on_WAITING_ENTER(InOut.TIMEOUT)
+            MachineState.IDLE    -> {}
+            MachineState.UNKNOWN -> on_UNKNOW(InOut.TIMEOUT)
+            MachineState.RESTART -> on_RESTART(InOut.TIMEOUT)
+            MachineState.WAITING_PEOPLE -> on_WAITING_PEOPLE(InOut.TIMEOUT)
+            MachineState.WAITING_THERMOMETER -> on_WAITING_THERMOMETER(InOut.TIMEOUT)
+            MachineState.CALL_HELP   -> on_CALL_HELP(InOut.TIMEOUT)
+            MachineState.ALCOHOL_PROCEDURE -> on_ALCOHOL_PROCEDURE(InOut.TIMEOUT)
+            MachineState.FEVER_PROCEDURE -> on_FEVER_PROCEDURE(InOut.TIMEOUT)
+            MachineState.WAITING_ENTER -> on_WAITING_ENTER(InOut.TIMEOUT)
 
-            CleaningMachineState.CLEANING_PROCESS_1 -> on_CLEANING_PROCESS_1(InOut.TIMEOUT)
-            CleaningMachineState.CLEANING_PROCESS_2 -> on_CLEANING_PROCESS_2(InOut.TIMEOUT)
-            CleaningMachineState.CLEANING_PROCESS_3 -> on_CLEANING_PROCESS_3(InOut.TIMEOUT)
-            CleaningMachineState.WAITING_FINISH     -> on_WAITING_FINISH(InOut.TIMEOUT)
-            CleaningMachineState.GRANA_BOLSO        -> on_GRANA_BOLSO(InOut.TIMEOUT)
-
-            CleaningMachineState.PLAYING     -> {}
-
+            MachineState.CLEANING_PROCESS_1 -> on_CLEANING_PROCESS_1(InOut.TIMEOUT)
+            MachineState.CLEANING_PROCESS_2 -> on_CLEANING_PROCESS_2(InOut.TIMEOUT)
+            MachineState.CLEANING_PROCESS_3 -> on_CLEANING_PROCESS_3(InOut.TIMEOUT)
+            MachineState.WAITING_FINISH     -> on_WAITING_FINISH(InOut.TIMEOUT)
+            MachineState.GRANA_BOLSO        -> on_GRANA_BOLSO(InOut.TIMEOUT)
         }
     }
 
@@ -175,14 +159,18 @@ object CleaningMachine {
         return false
     }
 
+    lateinit var bma_mostra_temperatura : Button
+
     fun start(activity: AppCompatActivity, context: Context) {
         mainActivity = activity
         appContext = context
 
+        bma_mostra_temperatura = (mainActivity as MainActivity).texto_30_superior
+
 
 //        (mainActivity as MainActivity).btn_decreto
 
-        receivedState = CleaningMachineState.UNKNOW
+        receivedState = MachineState.UNKNOWN
 
         questionDelayList.add("Default ${DEFAULT_TIME_TO_QUESTION} ms")
         questionDelayList.add("Question 50 ms")
@@ -198,7 +186,7 @@ object CleaningMachine {
     fun startStateMachine() : Boolean {
         if ( ConnectThread.isConnected ) {
             stateMachineRunning = true
-            desiredState = CleaningMachineState.RESTART
+            desiredState = MachineState.RESTART
             Timber.e("setei desiredState = ${desiredState} em startStateMachine")
 
             machineChecking(WAIT_TIME_TO_RESPONSE)
@@ -245,8 +233,16 @@ object CleaningMachine {
                 delayToNext = WAIT_WHEN_OFFLINE
             } else {
                 if (delayToNext == 0L) {
+
                     delayToNext = SELECTED_TIME_TO_QUESTION
-                    dropLog = true
+
+//                    if ( (mainActivity as MainActivity).painel_inferior.isVisible == false) {
+//                        delayToNext = SELECTED_TIME_TO_QUESTION
+//                        dropLog = true
+//                    } else {
+//                        delayToNext = 5000
+//                        dropLog = true
+//                    }
                 }
             }
 
@@ -367,43 +363,45 @@ object CleaningMachine {
             if ( background > 0 ) {
                 btn.setBackgroundResource(background)
             }
-            btn.visibility = if ( flag ) View.VISIBLE else View.INVISIBLE
+            btn.visibility = if ( flag ) View.VISIBLE else View.GONE
             btn.isEnabled = flag
         }
     }
 
-
-
-    fun getMedias(fase: VideoFase ) : ArrayList<Media>? {
+    fun getMedias(state: MachineState ) : ArrayList<Media>? {
         var mediasList: ArrayList<Media>? = null
 
-        when (fase) {
-            VideoFase.IDLE -> {}
-            VideoFase.WAITING_PEOPLE -> mediasList = Config.waitingVideo
-            VideoFase.WELCOME -> mediasList = Config.welcomeVideo
-            VideoFase.TEMPERATURE_MEASURE -> mediasList = Config.mediasTempMeasure
-            VideoFase.HELP -> mediasList = Config.helpVideo
-            VideoFase.ALCOHOL -> mediasList = Config.alcoholVideo
-            VideoFase.FEVER -> mediasList = Config.feverVideo
-            VideoFase.ENTER -> mediasList = Config.enterVideo
-            VideoFase.TEST  -> mediasList = Config.mediasTest
+        when (state) {
+            MachineState.IDLE                   -> mediasList = Config.idleMedias
+            MachineState.UNKNOWN                -> mediasList = Config.unknownMedias
+            MachineState.RESTART                -> mediasList = Config.restartMedias
+            MachineState.WAITING_PEOPLE         -> mediasList = Config.waitingPeopleMedias
+            MachineState.WAITING_THERMOMETER    -> mediasList = Config.waitingThermometerMedias
+            MachineState.CALL_HELP              -> mediasList = Config.helpMedias
+            MachineState.FEVER_PROCEDURE        -> mediasList = Config.feverMedias
+            MachineState.ALCOHOL_PROCEDURE      -> mediasList = Config.alcoholMedias
+            MachineState.WAITING_ENTER          -> mediasList = Config.waitingEnterMedias
+            MachineState.CLEANING_PROCESS_1     -> mediasList = Config.cleaningProcess1Medias
+            MachineState.CLEANING_PROCESS_2     -> mediasList = Config.cleaningProcess2Medias
+            MachineState.CLEANING_PROCESS_3     -> mediasList = Config.cleaningProcess3Medias
+            MachineState.WAITING_FINISH         -> mediasList = Config.WaitFinishMedias
+            MachineState.GRANA_BOLSO            -> mediasList = Config.granaNoBolsoMedias
         }
         return(mediasList)
     }
 
+    fun aguardando(state: MachineState, indicadorFundo: Button? = null) {
 
-    fun aguardando(fase: VideoFase, indicadorFundo: Button? = null) {
+        Timber.e("aguardando fase: ${state} ")
 
-        Timber.e("aguardando fase: ${fase} ")
-
-        if ( fase == VideoFase.IDLE) {
+        if ( state == MachineState.IDLE) {
             WaitingModeThread.newLeaveWaitingMode()
 //            buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true, background = R.drawable.full_screen_background )
         } else {
-            var mediasList = getMedias(fase)
+            var mediasList = getMedias(state)
             if ( mediasList != null) {
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
-                WaitingModeThread.newEnterWaitingMode(fase.ordinal, mediasList, indicadorFundo)
+                WaitingModeThread.newEnterWaitingMode(state.ordinal, mediasList, indicadorFundo)
             }
         }
     }
@@ -419,17 +417,16 @@ object CleaningMachine {
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
 
                 Timber.i("aguardando(VideoFase.WAITING_PEOPLE) em 111 (on_WAITING_PEOPLE)")
-                aguardando(VideoFase.WAITING_PEOPLE)
+                aguardando(MachineState.WAITING_PEOPLE)
             }
 
             InOut.OUT,
             InOut.TIMEOUT -> {
+                aguardando(MachineState.IDLE)
                 if (flag == InOut.OUT) cancelRunFaseTimer()
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.OFF)
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
                 Timber.i("aguardando(VideoFase.IDLE) em 222 - on_WAITING_PEOPLE ${flag}")
-                aguardando(VideoFase.IDLE)
-
                 ligaIndicadorSaida(0)
             }
         }
@@ -440,70 +437,62 @@ object CleaningMachine {
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
-                initRunFaseTimer(3000L )
+                initRunFaseTimer(3500L )
+
+                val random = Random()
+                temperaturaFake= ((random.nextInt(15)) + 360) / 10F
+                temperaturaMedida = 0F
                 waitingThermometer = true
 
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).temperatura_seekBar.isEnabled = true
-                }
-                aguardando(VideoFase.TEMPERATURE_MEASURE)
+                aguardando(MachineState.WAITING_THERMOMETER)
             }
 
             InOut.OUT ,
             InOut.TIMEOUT -> {
+                aguardando(MachineState.IDLE)
                 Timber.i("vai chamar aguardando(VideoFase.IDLE) em 333 on_WAITING_THERMOMETER ${flag}")
-                aguardando(VideoFase.IDLE)
 
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).temperatura_seekBar.isEnabled = false
-                }
+                waitingThermometer = false
 
                 if ( flag == InOut.OUT) {
                     cancelRunFaseTimer()
                 } else {
-                    val random = Random()
-                    temperaturaFake= ((random.nextInt(15)) + 360) / 10F
 
                     if ( temperaturaFake < 37.3F) {
-                        changeCurrentState(CleaningMachineState.ALCOHOL_PROCESS)
+                        changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_OUT)
                     } else {
-                        changeCurrentState(CleaningMachineState.FEVER_PROCEDURE)
+                        changeCurrentState(MachineState.FEVER_PROCEDURE, FROM_OUT)
                     }
                 }
             }
         }
     }
 
-    fun on_ALCOHOL_PROCESS(flag : InOut) {
+    fun on_ALCOHOL_PROCEDURE(flag : InOut) {
         var timeout = 30000
-        Timber.i("ZZ on_ALCOHOL_PROCESS ${flag} desiredState=$desiredState receivedState=$receivedState")
+        Timber.i("ZZ on_ALCOHOL_PROCEDURE ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-
-                if ( temperaturaFake > 0 ) {
-                    temperaturaMedida = temperaturaFake
-                }
+                if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(timeout.toLong() )
 
                 // Prepara botão de fundo com a temperatura medida
 //                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
-//                buttonAdjust((mainActivity as MainActivity).btn_sem_febre, true, str=String.format("%.2f°", temperaturaMedida))
                 buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_on)
-                buttonAdjust((mainActivity as MainActivity).indicador_temperatura_sem_febre, true, str=String.format("%.2f°", temperaturaMedida))
-                aguardando(VideoFase.ALCOHOL, (mainActivity as MainActivity).indicador_temperatura_sem_febre)
+
+                buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
+                aguardando(MachineState.ALCOHOL_PROCEDURE, bma_mostra_temperatura)
             }
 
             InOut.OUT,
             InOut.TIMEOUT-> {
-                waitingThermometer = false
-
+                aguardando(MachineState.IDLE)
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true)
-                buttonAdjust((mainActivity as MainActivity).btn_sem_febre, false)
                 buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_off)
 
                 if (flag ==  InOut.TIMEOUT) {
-                    changeCurrentState(CleaningMachineState.CALL_ATENDENT)
+                    changeCurrentState(MachineState.CALL_HELP, FROM_OUT)
                 }
             }
         }
@@ -513,37 +502,28 @@ object CleaningMachine {
         Timber.i("ZZ on_FEVER_PROCEDURE ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-
-                if ( temperaturaFake > 0 ) {
-                    temperaturaMedida =  temperaturaFake
-                }
+                if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(5000L )
 
                 // Oculta botao btn_show_full_screen
-                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
+//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
 
-                var texto = "De acordo com decreto N° 40.778/2020 " +
-                        "Não é permitida a entrada de pessoas com mais de 37,3°C " +
-                        "em estabelecimentos comerciais."
-
-                // Prepara botão de fundo com a temperatura medida
                 buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_value, true, str = String.format("%.2f°", temperaturaMedida))
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_message, true, str = texto)
+
+                buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
+                aguardando(MachineState.FEVER_PROCEDURE, bma_mostra_temperatura)
             }
 
-            InOut.OUT -> {
-                waitingThermometer = false
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_value, false)
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_message, false)
-            }
+            InOut.OUT,
+            InOut.TIMEOUT-> {
+                aguardando(MachineState.IDLE)
+                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true)
 
-            InOut.TIMEOUT -> {
-                waitingThermometer = false
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_value, false)
-                buttonAdjust((mainActivity as MainActivity).btn_fever_show_message, false)
-                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                if (flag ==  InOut.TIMEOUT) {
+                    changeCurrentState(MachineState.WAITING_PEOPLE, FROM_OUT)
+                }
+
             }
         }
     }
@@ -557,31 +537,22 @@ object CleaningMachine {
                 ejetaProduto1()
 
                 desiredState = receivedState
-                initRunFaseTimer(20000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Entrada Liberada\n\n\nPasse\npelo\nPortal"
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_in.setBackgroundResource(R.drawable.door_green)
-                }
+                initRunFaseTimer(10000L )
+
+                aguardando(MachineState.WAITING_ENTER)
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
             }
 
             InOut.OUT -> {
+                aguardando(MachineState.IDLE)
                 cancelRunFaseTimer()
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_in.setBackgroundResource(R.drawable.door_red)
-                }
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
             }
 
             InOut.TIMEOUT -> {
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_in.setBackgroundResource(R.drawable.door_red)
-                }
-                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                aguardando(MachineState.IDLE)
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
+                changeCurrentState(MachineState.WAITING_PEOPLE, FROM_OUT)
             }
         }
     }
@@ -594,30 +565,17 @@ object CleaningMachine {
                 ligaIndicadorSaida(1)
                 ejetaProduto2()
                 initRunFaseTimer(2000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Aguarde!\nFase 1"
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_on)
-                }
+                aguardando(MachineState.CLEANING_PROCESS_1)
             }
 
             InOut.OUT -> {
                 cancelRunFaseTimer()
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-                }
+                aguardando(MachineState.IDLE)
             }
 
             InOut.TIMEOUT -> {
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-                }
-                changeCurrentState(CleaningMachineState.CLEANING_PROCESS_2)
+                aguardando(MachineState.IDLE)
+                changeCurrentState(MachineState.CLEANING_PROCESS_2, FROM_OUT)
             }
         }
     }
@@ -629,30 +587,17 @@ object CleaningMachine {
                 desiredState = receivedState
                 ejetaProduto3()
                 initRunFaseTimer(2000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Aguarde!\nFase 2"
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_on_plus)
-                }
+                aguardando(MachineState.CLEANING_PROCESS_2)
             }
 
             InOut.OUT -> {
                 cancelRunFaseTimer()
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-                }
+                aguardando(MachineState.IDLE)
             }
 
             InOut.TIMEOUT -> {
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-                }
-                changeCurrentState(CleaningMachineState.CLEANING_PROCESS_3)
+                aguardando(MachineState.IDLE)
+                changeCurrentState(MachineState.CLEANING_PROCESS_3, FROM_OUT)
             }
         }
     }
@@ -663,29 +608,17 @@ object CleaningMachine {
             InOut.IN -> {
                 desiredState = receivedState
                 initRunFaseTimer(2000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Aguarde..."
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
-                }
+                aguardando(MachineState.CLEANING_PROCESS_3)
             }
 
             InOut.OUT -> {
-
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                }
                 cancelRunFaseTimer()
+                aguardando(MachineState.IDLE)
             }
 
             InOut.TIMEOUT -> {
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                }
-                changeCurrentState(CleaningMachineState.WAITING_FINISH)
+                aguardando(MachineState.IDLE)
+                changeCurrentState(MachineState.WAITING_FINISH, FROM_OUT)
             }
         }
     }
@@ -697,37 +630,27 @@ object CleaningMachine {
                 desiredState = receivedState
                 ligaIndicadorSaida(2)
                 initRunFaseTimer(10000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Aguardando\nsaida"
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_out.setBackgroundResource(R.drawable.door_green)
-                    (mainActivity as MainActivity).btn_money.isEnabled = true
-                }
+                aguardando(MachineState.WAITING_FINISH)
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
+                buttonAdjust((mainActivity as MainActivity).btn_money, true)
             }
 
             InOut.OUT -> {
                 cancelRunFaseTimer()
                 ligaIndicadorSaida(0)
-
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_out.setBackgroundResource(R.drawable.door_red)
-                    (mainActivity as MainActivity).btn_money.isEnabled = false
-                }
-//                changeCurrentState(CleaningMachineState.GRANA_BOLSO)
+                aguardando(MachineState.IDLE)
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
+                buttonAdjust((mainActivity as MainActivity).btn_money, false)
             }
 
             InOut.TIMEOUT -> {
                 ligaIndicadorSaida(0)
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_door_out.setBackgroundResource(R.drawable.door_red)
-                    (mainActivity as MainActivity).btn_money.isEnabled = false
-                }
-                changeCurrentState(CleaningMachineState.GRANA_BOLSO)
+                aguardando(MachineState.IDLE)
+
+                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
+                buttonAdjust((mainActivity as MainActivity).btn_money, false)
+
+                changeCurrentState(MachineState.GRANA_BOLSO, FROM_OUT)
             }
         }
     }
@@ -739,52 +662,44 @@ object CleaningMachine {
             InOut.IN -> {
                 desiredState = receivedState
                 initRunFaseTimer(3000L )
-                mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.text = "Obrigado!"
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.VISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_money.setBackgroundResource(R.drawable.dindin)
-                }
+                aguardando(MachineState.GRANA_BOLSO)
+                buttonAdjust((mainActivity as MainActivity).btn_money, true, background = R.drawable.dindin)
             }
 
             InOut.OUT -> {
                 cancelRunFaseTimer()
+                buttonAdjust((mainActivity as MainActivity).btn_money, true, background = R.drawable.dindin_futuro)
                 mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_money.setBackgroundResource(R.drawable.dindin_futuro)
                     ScreenLog.add(LogType.TO_HISTORY, "Faturou ${valorFatura}")
                 }
 
             }
 
             InOut.TIMEOUT -> {
+                buttonAdjust((mainActivity as MainActivity).btn_money, true, background = R.drawable.dindin_futuro)
                 mainActivity?.runOnUiThread {
-                    (mainActivity as MainActivity).btn_mensagem_tela.visibility = View.INVISIBLE
-                    (mainActivity as MainActivity).btn_mensagem_tela.isEnabled = false
-                    (mainActivity as MainActivity).btn_money.setBackgroundResource(R.drawable.dindin_futuro)
                     ScreenLog.add(LogType.TO_HISTORY, "Faturou ${valorFatura}")
                 }
-                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                changeCurrentState(MachineState.WAITING_PEOPLE, FROM_OUT)
             }
         }
     }
 
 
-    fun on_CALL_ATENDENT(flag : InOut) {
+    fun on_CALL_HELP(flag : InOut) {
         Timber.i("ZZ on_CALL_ATENDENT ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
                 waitingThermometer = true
-                aguardando(VideoFase.HELP)
+                aguardando(MachineState.CALL_HELP)
             }
 
             InOut.OUT,
             InOut.TIMEOUT -> {
                 if (flag == InOut.OUT) cancelRunFaseTimer()
-                Timber.i("vai chamar aguardando(VideoFase.IDLE) em 444 on_CALL_ATENDENT ${flag}")
-                aguardando(VideoFase.IDLE)
+                Timber.i("vai chamar aguardando(VideoFase.IDLE) em 444 on_CALL_HELP ${flag}")
+                aguardando(MachineState.IDLE)
 
             }
         }
@@ -795,13 +710,13 @@ object CleaningMachine {
         temperaturaMedida = temperatura
 
         if ( temperatura <= 37F) {
-            changeCurrentState(CleaningMachineState.ALCOHOL_PROCESS)
+            changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_EXT)
         } else {
-            changeCurrentState(CleaningMachineState.FEVER_PROCEDURE)
+            changeCurrentState(MachineState.FEVER_PROCEDURE, FROM_EXT)
         }
     }
 
-    fun changeCurrentState(newState : CleaningMachineState) {
+    fun changeCurrentState(newState : MachineState, bypassOutProcedure : Boolean = false) {
 
         countCommandsToDesiredState = 0
 
@@ -810,24 +725,36 @@ object CleaningMachine {
         }
 
 
+        buttonAdjust(bma_mostra_temperatura, false)
+
+
+//        mainActivity?.runOnUiThread {
+//            (mainActivity as MainActivity).texto_30_superior.visibility = View.GONE
+//            (mainActivity as MainActivity).texto_30_superior.isEnabled = false
+//            (mainActivity as MainActivity).texto_30_superior.text="????"
+//        }
+//
+
         //---------------------------------------------------------
         // Trata saida do estado atual
         //---------------------------------------------------------
-        when (receivedState ) {
-            CleaningMachineState.UNKNOW                 -> {}
-            CleaningMachineState.RESTART                -> { }
-            CleaningMachineState.WAITING_PERSON         -> { on_WAITING_PEOPLE(InOut.OUT) }
-            CleaningMachineState.WAITING_THERMOMETER    -> { on_WAITING_THERMOMETER(InOut.OUT) }
-            CleaningMachineState.WAITING_ENTER          -> { on_WAITING_ENTER(InOut.OUT) }
-            CleaningMachineState.CALL_ATENDENT          -> { on_CALL_ATENDENT(InOut.OUT) }
-            CleaningMachineState.ALCOHOL_PROCESS        -> { on_ALCOHOL_PROCESS(InOut.OUT) }
-            CleaningMachineState.FEVER_PROCEDURE        -> { on_FEVER_PROCEDURE(InOut.OUT) }
-            CleaningMachineState.CLEANING_PROCESS_1     -> { on_CLEANING_PROCESS_1(InOut.OUT) }
-            CleaningMachineState.CLEANING_PROCESS_2     -> { on_CLEANING_PROCESS_2(InOut.OUT) }
-            CleaningMachineState.CLEANING_PROCESS_3     -> { on_CLEANING_PROCESS_3(InOut.OUT) }
-            CleaningMachineState.WAITING_FINISH         -> { on_WAITING_FINISH(InOut.OUT) }
-            CleaningMachineState.GRANA_BOLSO            -> { on_GRANA_BOLSO(InOut.OUT) }
-            CleaningMachineState.PLAYING                -> { } // TODO:
+        if (! bypassOutProcedure) {
+            when (receivedState ) {
+                MachineState.IDLE                   -> {}
+                MachineState.UNKNOWN                -> {}
+                MachineState.RESTART                -> {}
+                MachineState.WAITING_PEOPLE         -> { on_WAITING_PEOPLE(InOut.OUT) }
+                MachineState.WAITING_THERMOMETER    -> { on_WAITING_THERMOMETER(InOut.OUT) }
+                MachineState.WAITING_ENTER          -> { on_WAITING_ENTER(InOut.OUT) }
+                MachineState.CALL_HELP              -> { on_CALL_HELP(InOut.OUT) }
+                MachineState.ALCOHOL_PROCEDURE      -> { on_ALCOHOL_PROCEDURE(InOut.OUT) }
+                MachineState.FEVER_PROCEDURE        -> { on_FEVER_PROCEDURE(InOut.OUT) }
+                MachineState.CLEANING_PROCESS_1     -> { on_CLEANING_PROCESS_1(InOut.OUT) }
+                MachineState.CLEANING_PROCESS_2     -> { on_CLEANING_PROCESS_2(InOut.OUT) }
+                MachineState.CLEANING_PROCESS_3     -> { on_CLEANING_PROCESS_3(InOut.OUT) }
+                MachineState.WAITING_FINISH         -> { on_WAITING_FINISH(InOut.OUT) }
+                MachineState.GRANA_BOLSO            -> { on_GRANA_BOLSO(InOut.OUT) }
+            }
         }
 
         receivedState = newState
@@ -836,20 +763,20 @@ object CleaningMachine {
         // Trata ENTRADA do estado atual
         //---------------------------------------------------------
         when (receivedState ) {
-            CleaningMachineState.UNKNOW                 -> { } // TODO:
-            CleaningMachineState.RESTART                -> { ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION) }
-            CleaningMachineState.WAITING_PERSON         -> { on_WAITING_PEOPLE(InOut.IN) }
-            CleaningMachineState.WAITING_THERMOMETER    -> { on_WAITING_THERMOMETER(InOut.IN) }
-            CleaningMachineState.WAITING_ENTER          -> { on_WAITING_ENTER(InOut.IN) }
-            CleaningMachineState.CALL_ATENDENT          -> { on_CALL_ATENDENT(InOut.IN) }
-            CleaningMachineState.ALCOHOL_PROCESS        -> { on_ALCOHOL_PROCESS(InOut.IN) }
-            CleaningMachineState.FEVER_PROCEDURE        -> { on_FEVER_PROCEDURE(InOut.IN) }
-            CleaningMachineState.CLEANING_PROCESS_1     -> { on_CLEANING_PROCESS_1(InOut.IN) }
-            CleaningMachineState.CLEANING_PROCESS_2     -> { on_CLEANING_PROCESS_2(InOut.IN) }
-            CleaningMachineState.CLEANING_PROCESS_3     -> { on_CLEANING_PROCESS_3(InOut.IN) }
-            CleaningMachineState.WAITING_FINISH         -> { on_WAITING_FINISH(InOut.IN) }
-            CleaningMachineState.GRANA_BOLSO            -> { on_GRANA_BOLSO(InOut.IN) }
-            CleaningMachineState.PLAYING                -> { } // TODO:
+            MachineState.IDLE                   -> { } // TODO:
+            MachineState.UNKNOWN                -> { } // TODO:
+            MachineState.RESTART                -> { ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION) }
+            MachineState.WAITING_PEOPLE         -> { on_WAITING_PEOPLE(InOut.IN) }
+            MachineState.WAITING_THERMOMETER    -> { on_WAITING_THERMOMETER(InOut.IN) }
+            MachineState.WAITING_ENTER          -> { on_WAITING_ENTER(InOut.IN) }
+            MachineState.CALL_HELP              -> { on_CALL_HELP(InOut.IN) }
+            MachineState.ALCOHOL_PROCEDURE      -> { on_ALCOHOL_PROCEDURE(InOut.IN) }
+            MachineState.FEVER_PROCEDURE        -> { on_FEVER_PROCEDURE(InOut.IN) }
+            MachineState.CLEANING_PROCESS_1     -> { on_CLEANING_PROCESS_1(InOut.IN) }
+            MachineState.CLEANING_PROCESS_2     -> { on_CLEANING_PROCESS_2(InOut.IN) }
+            MachineState.CLEANING_PROCESS_3     -> { on_CLEANING_PROCESS_3(InOut.IN) }
+            MachineState.WAITING_FINISH         -> { on_WAITING_FINISH(InOut.IN) }
+            MachineState.GRANA_BOLSO            -> { on_GRANA_BOLSO(InOut.IN) }
         }
 
     }
@@ -861,20 +788,20 @@ object CleaningMachine {
         if (receivedState == desiredState) {
             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         } else {
-            Timber.i("desiredState = ${desiredState} em 1111 (${CleaningMachineState.RESTART}")
+            Timber.i("desiredState = ${desiredState} em 1111 (${MachineState.RESTART}")
             when (desiredState) {
-                CleaningMachineState.RESTART -> {
+                MachineState.RESTART -> {
                     if (countCommandsToDesiredState++ == 0) {
                         ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
                     }
                 }
-                CleaningMachineState.WAITING_PERSON,
-                CleaningMachineState.WAITING_THERMOMETER,
-                CleaningMachineState.CALL_ATENDENT,
-                CleaningMachineState.FEVER_PROCEDURE,
-                CleaningMachineState.ALCOHOL_PROCESS,
-                CleaningMachineState.WAITING_ENTER,
-                CleaningMachineState.GRANA_BOLSO -> {
+                MachineState.WAITING_PEOPLE,
+                MachineState.WAITING_THERMOMETER,
+                MachineState.CALL_HELP,
+                MachineState.FEVER_PROCEDURE,
+                MachineState.ALCOHOL_PROCEDURE,
+                MachineState.WAITING_ENTER,
+                MachineState.GRANA_BOLSO -> {
                     ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
                 }
                 else -> {
@@ -899,7 +826,7 @@ object CleaningMachine {
             }
 
             EventType.FW_RESTART -> {
-                changeCurrentState(CleaningMachineState.RESTART)
+                changeCurrentState(MachineState.RESTART, FROM_EXT)
                 ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
             }
 
@@ -945,102 +872,99 @@ object CleaningMachine {
 
                     when (receivedState) {
 
-                        CleaningMachineState.UNKNOW-> {
-                            desiredState = CleaningMachineState.RESTART
+                        MachineState.IDLE-> {
+                            Timber.e("Não deveria chegar em processReceivedResponse com MachineState.IDLE")
+                        }
+
+                        MachineState.UNKNOWN-> {
+                            desiredState = MachineState.RESTART
                             Timber.e("setei desiredState = ${desiredState} em CleaningMachineState.UNKNOW")
                         }
 
-                        CleaningMachineState.RESTART-> {
+                        MachineState.RESTART-> {
                             // Situações de erro e busy são são tratadas em EventResponse.BUSY
-                            changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                            changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                         }
 
-                        CleaningMachineState.WAITING_PERSON -> {
+                        MachineState.WAITING_PEOPLE -> {
                             if ( pessoaEmSensor(Sensor.PRESENCA) ) {
-                                changeCurrentState(CleaningMachineState.WAITING_THERMOMETER)
+                                changeCurrentState(MachineState.WAITING_THERMOMETER, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.WAITING_THERMOMETER -> {
+                        MachineState.WAITING_THERMOMETER -> {
                             if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
-                                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                                changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.FEVER_PROCEDURE -> {
+                        MachineState.FEVER_PROCEDURE -> {
                             // só sai por timeout
 //                            if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
-//                                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+//                                changeCurrentState(CleaningMachineState.WAITING_PEOPLE, FROM_EXT)
 //                            }
                         }
 
-                        CleaningMachineState.CALL_ATENDENT -> {
+                        MachineState.CALL_HELP -> {
                             if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
-                                changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                                changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.ALCOHOL_PROCESS -> {
+                        MachineState.ALCOHOL_PROCEDURE -> {
                             if ( pessoaEmSensor(Sensor.ALCOHOL) ) {
                                 Timber.e("WWW 005 testou e disse que tem mão no Alcool vai para WAITING_ENTER")
-                                changeCurrentState(CleaningMachineState.WAITING_ENTER)
+                                changeCurrentState(MachineState.WAITING_ENTER, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.WAITING_ENTER -> {
+                        MachineState.WAITING_ENTER -> {
                             if ( pessoaEmSensor(Sensor.ENTRADA) ) {
-                                changeCurrentState(CleaningMachineState.CLEANING_PROCESS_1)
+                                changeCurrentState(MachineState.CLEANING_PROCESS_1, FROM_EXT)
                                 pessoaDentro = true
                             }
                         }
 
 
-                        CleaningMachineState.CLEANING_PROCESS_1 -> {
+                        MachineState.CLEANING_PROCESS_1 -> {
                             if (  pessoaEmSensor(Sensor.SAIDA)  ) {
                                 pessoaDentro = false
                             }
 
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(CleaningMachineState.WAITING_FINISH)
+                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.CLEANING_PROCESS_2 -> {
+                        MachineState.CLEANING_PROCESS_2 -> {
                             if (  pessoaEmSensor(Sensor.SAIDA)  ) {
                                 pessoaDentro = false
                             }
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(CleaningMachineState.WAITING_FINISH)
+                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.CLEANING_PROCESS_3 -> {
+                        MachineState.CLEANING_PROCESS_3 -> {
                             if (  pessoaEmSensor(Sensor.SAIDA)  ) {
                                 pessoaDentro = false
                             }
                             if ( ! pessoaDentro ) {
-                                changeCurrentState(CleaningMachineState.WAITING_FINISH)
+                                changeCurrentState(MachineState.WAITING_FINISH, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.WAITING_FINISH -> {
-
+                        MachineState.WAITING_FINISH -> {
                             if (  pessoaEmSensor(Sensor.SAIDA)  ) {
                                 pessoaDentro = false
                             }
-
                             if (  ! pessoaDentro ) {
-                                changeCurrentState(CleaningMachineState.GRANA_BOLSO)
+                                changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
                             }
                         }
 
-                        CleaningMachineState.GRANA_BOLSO -> {
-                           changeCurrentState(CleaningMachineState.WAITING_PERSON)
-                        }
-
-                        CleaningMachineState.PLAYING -> {
-                            // TODO:
-                            changeCurrentState(CleaningMachineState.WAITING_PERSON)
+                        MachineState.GRANA_BOLSO -> {
+                           changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                         }
 
                     }

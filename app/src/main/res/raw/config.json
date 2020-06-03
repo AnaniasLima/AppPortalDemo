@@ -11,45 +11,58 @@
 	"SENSOR3_VALUE": 50,
 	"SENSOR4_VALUE": 50,
 
-	"TEMPERATURE_MEASURE"          : [
+	"IDLE"      : [ { "volume": 99, "filename": "nana.png"} ],
+	"UNKNOWN"      : [ { "volume": 99, "filename": "nana.png"} ],
+	"RESTART"      : [ { "volume": 99, "filename": "nana.png"} ],
+
+	"WAITING_PEOPLE"          : [
+		{ "volume": 99, "filename": "apresentacao.mp3" },
+		{ "volume": 99, "filename": "bem_vindo.png", "duracao" : 60000  },
+		{ "volume": 99, "filename": "bem_vindo2.png", "duracao" : 60000  }
+	],
+
+	"WAITING_THERMOMETER"          : [
 		{ "volume": 99, "filename": "medindo_temperatura3.png", "duracao" : -1000 },
 		{ "volume": 99, "filename": "medindo_temperatura2.png", "duracao" : -1000 },
 		{ "volume": 99, "filename": "medindo_temperatura1.png", "duracao" : -1000 },
 		{ "volume": 99, "filename": "medindo_temperatura0.png", "duracao" : -5000 }
 	],
 
+
+	"CALL_HELP"              : [ { "volume": 99, "filename": "procure_ajuda.png"} ],
+
+	"FEVER_PROCEDURE"      : [ { "volume": 99, "filename": "fever.png" } 	],
+
+	"ALCOHOL_PROCEDURE"    : [
+		{ "volume": 99, "filename": "no_fever1.png", "duracao" :  1500},
+		{ "volume": 99, "filename": "no_fever2.png", "duracao" : 10000}
+	],
+
+	"WAITING_ENTER"      : [
+		{ "volume": 99, "filename": "entrada.amr" },
+		{ "volume": 99, "filename": "entrada_liberada.png"}
+	],
+
+	"CLEANING_PROCESS_1"      : [
+		{ "volume": 99, "filename": "aguarde.amr" },
+		{ "volume": 99, "filename": "aguarde_fase1.png"}
+	],
+	"CLEANING_PROCESS_2"      : [ { "volume": 99, "filename": "aguarde_fase2.png"} ],
+	"CLEANING_PROCESS_3"      : [ { "volume": 99, "filename": "aguarde_fase3.png"} ],
+
+
+	"WAITING_FINISH"      : [
+		{ "volume": 99, "filename": "saida.amr" },
+		{ "volume": 99, "filename": "saida_liberada.png"}
+	],
+
+	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "grana_bolso.png"} ],
+
 	"MEDIAS_TEST"          : [
+		{ "volume": 99, "filename": "audio3.amr" },
+		{ "volume": 99, "filename": "fever.png", "duracao" : 3000 },
 		{ "volume": 99, "filename": "fever.png", "duracao" : 3000 },
 		{ "volume": 99, "filename": "nana.png", "duracao" : 3000 },
 		{ "volume": 99, "filename": "tela_verde.mp4"}
-	],
-
-	"WAITING_PEOPLE"          : [
-		{ "volume": 99, "filename": "bem_vindo.png", "duracao" : 60000  },
-		{ "volume": 99, "filename": "bem_vindo2.png", "duracao" : 60000  }
-	],
-	"WELCOME_VIDEO"          : [
-		{ "volume": 99, "filename": "chegou_gente.mp4" },
-		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" }
-	],
-	"CALL_HELP"              : [ { "volume": 99, "filename": "procure_ajuda.png"} ],
-	"ALCOHOL_INSTRUCTION"    : [
-      { "volume": 99, "filename": "no_fever1.png", "duracao" : 2000},
-      { "volume": 99, "filename": "no_fever2.png", "duracao" : 2000}
-	],
-	"FEVER_INSTRUCTION"      : [ 
-		{ "volume": 99, "filename": "tela_vermelha.mp4"},
-		{ "volume": 99, "filename": "instrucao_em_caso_febre.mp4"}
-	],
-	"ENTER_INSTRUCTION"      : [ { "volume": 99, "filename": "instrucao_entrar.mp4"} ],
-	
-	"ON_DEMO_VIDEO": [
-	
-		{ "volume": 99, "filename": "esperando_gente.mp4" },
-		{ "volume": 99, "filename": "chegou_gente.mp4" },
-		{ "volume": 99, "filename": "instrucao_medir_temperatura.mp4" },
-		{ "volume": 99, "filename": "instrucao_uso_alcool.mp4" },
-		{ "volume": 99, "filename": "instrucao_em_caso_febre.mp4" },
-		{ "volume": 99, "filename": "instrucao_entrar.mp4" }
 	]
 }

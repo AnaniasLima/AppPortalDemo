@@ -1,14 +1,14 @@
 package com.example.appportaldemo
 
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Handler
+import android.view.View
 import android.widget.Button
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import timber.log.Timber
-import android.os.Handler
-import android.view.View
-import kotlinx.android.synthetic.main.activity_main.*
 
 
 @SuppressLint("StaticFieldLeak")
@@ -18,6 +18,8 @@ object  WaitingModeThread : Thread() {
     lateinit var videoView: VideoView
     lateinit var imageView: Button
     lateinit var invisibleButton: Button
+
+    var mediaPlayer : MediaPlayer? = null
 
     fun initialSetting( activity: AppCompatActivity,
               video: VideoView,
@@ -41,6 +43,7 @@ object  WaitingModeThread : Thread() {
 
     var lastPlayedVideo: Int = -1
     var changeVideo = false
+    var firstItemToPlay = 0
 
     var runFaseHandler: Handler = Handler()
     var runFaseRunnable: Runnable = Runnable {
@@ -60,7 +63,7 @@ object  WaitingModeThread : Thread() {
             if ( (mediasList != null)  && (mediasList!!.size>0)) {
                 if (  changeVideo ) {
                     if (++lastPlayedVideo == mediasList!!.size ) {
-                        lastPlayedVideo = 0
+                        lastPlayedVideo = firstItemToPlay
                     }
                     playMedia(mediasList!![lastPlayedVideo])
                 }
@@ -86,7 +89,7 @@ object  WaitingModeThread : Thread() {
 
     var backgroundText : Button? = null
 
-    fun newEnterWaitingMode(fase: Int, medias: ArrayList<Media>, indicadorFundo : Button?) {
+    fun newEnterWaitingMode(fase: Int, medias: ArrayList<Media>, indicadorFundo : Button? = null) {
 
         if ( fase == 0) {
             newLeaveWaitingMode()
@@ -94,13 +97,16 @@ object  WaitingModeThread : Thread() {
         }
 
         backgroundText = indicadorFundo
-
         modoWaitingRunning = true
+
+        myActivity.runOnUiThread {
+            stopPlayingSound()
+            stopPlayingVideo()
+        }
 
         if ( runningFase != 0) {
             Timber.e("ZZ Já estava rodando runningFase= ${runningFase} ")
             cancelFaseTimer()
-            stopPlayingVideo()
         }
 
         runningFase = fase
@@ -108,12 +114,24 @@ object  WaitingModeThread : Thread() {
 
         Timber.e("ZZ===============>>>>>>> enterWaitingMode : ${fase} ")
 
+        firstItemToPlay = 0
         lastPlayedVideo = 0
         changeVideo=false
+//        mediaPlayer = null
 
         myActivity.runOnUiThread {
             videoView.setOnCompletionListener {  changeVideo = true  }
             invisibleButton.setOnClickListener{  changeVideo = true  }
+        }
+
+        if ( mediasList!![lastPlayedVideo].mediaType == Media.AUDIO) {
+            if ( mediasList!!.size == 1 ) {
+                erroFatal("Quando media de som precisa de no minimo mais uma midea")
+            }
+            lastPlayedVideo++
+            firstItemToPlay = 1
+
+            playAudio(mediasList!![0])
         }
 
         playMedia(mediasList!![lastPlayedVideo])
@@ -122,8 +140,9 @@ object  WaitingModeThread : Thread() {
     fun newLeaveWaitingMode() {
         Timber.e("ZZ<<<<<<<< =============== VideoFase : ${runningFase} ")
         cancelFaseTimer()
-        stopPlayingVideo()
         myActivity.runOnUiThread {
+            stopPlayingSound()
+            stopPlayingVideo()
             videoView.visibility = View.GONE
             imageView.visibility = View.GONE
             invisibleButton.visibility = View.GONE
@@ -144,6 +163,38 @@ object  WaitingModeThread : Thread() {
         } catch (e: Exception) {}
     }
 
+    private fun playAudio(media : Media) {
+        Timber.i("ZZ----> PLAYING VIDEO $lastPlayedVideo  Video: ${media.filename}")
+
+        myActivity.runOnUiThread {
+            if ( Config.path != null) {
+                mediaPlayer = MediaPlayer()
+                if ( mediaPlayer != null  ) {
+                    mediaPlayer!!.setDataSource(media.filename)
+                }
+            } else {
+                mediaPlayer = MediaPlayer.create(Config.appContext, Uri.parse(media.filename))
+            }
+
+            if ( mediaPlayer != null  ) {
+                var volume = 1F
+
+                if ( media.volume > 0 ) {
+                    volume = media.volume.toFloat() / 100F
+                }
+                if (mediaPlayer!!.isPlaying) {
+                    mediaPlayer!!.stop()
+                }
+                try {
+                    mediaPlayer!!.setVolume(volume, volume)
+                    mediaPlayer!!.start()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Timber.e("=============== ERRO AO AJUSTAR PLAYER =======================: ${media.filename}")
+                }
+            }
+        }
+    }
 
     private fun playMedia(media : Media) {
         cancelRunFaseTimer()
@@ -215,6 +266,17 @@ object  WaitingModeThread : Thread() {
             }
         }
     }
+
+    fun stopPlayingSound() {
+        if ( mediaPlayer != null ) {
+            if (mediaPlayer!!.isPlaying) {
+                mediaPlayer!!.stop()
+            }
+            mediaPlayer!!.release()
+            mediaPlayer = null
+        }
+    }
+
 
     fun stopPlayingVideo() {
         if ( videoView.isPlaying ) {

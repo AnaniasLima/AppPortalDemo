@@ -1,5 +1,6 @@
 package com.example.appportaldemo
 
+import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -137,10 +138,9 @@ class MainActivity : AppCompatActivity() {
 
         Config.start(this, applicationContext)
         ScreenLog.start(this, applicationContext, log_recycler_view, history_recycler_view)
-//        WaitingMode.start(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
         ArduinoDevice.start(this, applicationContext)
         CleaningMachine.start(this, applicationContext)
-        WaitingModeThread.initialSetting(this, waiting_mode_video_view, waiting_mode_image_view, btnInvisivel)
+        WaitingModeThread.initialSetting(this, waiting_mode_painel_video, waiting_mode_painel_imagem, btnInvisivel)
 
         xxx()
         setButtonListeners()
@@ -237,23 +237,44 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    var mPlayer : MediaPlayer? = null
 
     fun setButtonListeners() {
 
 
-        btnMagico.setOnClickListener{
+        btnCantinhoSuperiorDireito.setOnClickListener{
+
+//            if ( mPlayer != null) {
+//                if (mPlayer!!.isPlaying) {
+//                    mPlayer!!.stop()
+//                }
+//                mPlayer!!.release()
+//                mPlayer = null
+//            }
+//
+//            mPlayer = MediaPlayer.create(this, R.raw.audio3);
+//            var volume = 0.1F * contaMagica
+//
+//            if ( mPlayer != null) {
+//                Timber.e("----- volume=${volume}")
+//                mPlayer!!.setVolume(volume, volume)
+//                mPlayer!!.start()
+//            }
+//
+
+
             contaMagica++
             Timber.e("contaMagica=${contaMagica}")
 
 //            if ( contaMagica == 1) {
-//                WaitingModeThread.newEnterWaitingMode(5, Config.alcoholVideo, indicador_temperatura_sem_febre)
+//                WaitingModeThread.newEnterWaitingMode(5, Config.testMedias)
 //            } else {
 //                WaitingModeThread.newLeaveWaitingMode()
 //            }
 
 
 
-            if ( contaMagica > 5 ) {
+            if ( contaMagica > 3 ) {
                 painel_inferior.visibility=View.VISIBLE
             }
             if ( contaMagica > 10 ) {
@@ -358,18 +379,6 @@ class MainActivity : AppCompatActivity() {
             ajustaSensores(true, true)
         }
 
-        btnInvisivel.setOnClickListener  {
-
-//            if  (log_recycler_view.visibility == View.VISIBLE) {
-//                log_recycler_view.setVisibility(View.INVISIBLE)
-//                log_recycler_view.setVisibility(View.GONE)
-//            } else {
-//                log_recycler_view.setVisibility(View.VISIBLE)
-//            }
-
-//            WaitingMode.leaveWaitingMode()
-//            log_recycler_view.setVisibility(View.VISIBLE)
-        }
     }
 
 }

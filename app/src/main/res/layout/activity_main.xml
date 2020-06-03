@@ -20,68 +20,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <VideoView android:id="@+id/waiting_mode_video_view"
+        <VideoView android:id="@+id/waiting_mode_painel_video"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"/>
 
-        <Button android:id="@+id/waiting_mode_image_view"
+        <Button android:id="@+id/waiting_mode_painel_imagem"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"/>
 
-        <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_febre"
+        <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_30_superior"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.30" />
 
-        <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_sem_febre"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.80" />
 
-
-        <Button android:id="@+id/btn_fever_show_value"
-            android:text=""
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:visibility="invisible"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:textSize="120dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/gl_febre"
-            android:background="@color/red"/>
-
-
-
-        <Button android:id="@+id/btn_fever_show_message"
-            android:text=""
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:visibility="invisible"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:textSize="60dp"
-            app:layout_constraintTop_toTopOf="@+id/gl_febre"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@color/red"/>
-
-
-        <Button android:id="@+id/btn_sem_febre"
-            android:text="99.99"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="invisible"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:textSize="120dp"
-            android:background="?android:selectableItemBackground"/>
-
-        <Button android:id="@+id/indicador_temperatura_sem_febre"
-            android:text="99.99"
+        <Button android:id="@+id/texto_30_superior"
+            android:text="99.99°"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="invisible"
@@ -89,10 +46,8 @@
             android:textColor="@color/white"
             android:gravity="center"
             android:textSize="120dp"
-            app:layout_constraintBottom_toBottomOf="@+id/gl_sem_febre"
+            app:layout_constraintBottom_toTopOf="@+id/gl_30_superior"
             android:background="?android:selectableItemBackground"/>
-
-
 
 
         <Button  android:id="@+id/btn_aguardando_conexao"
@@ -128,26 +83,14 @@
             android:background="@color/fundo"/>
 
 
-        <Button
-            android:id="@+id/btn_sem_comunicacao"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="80dp"
-            android:layout_marginTop="150dp"
-            android:layout_marginEnd="80dp"
-            android:layout_marginBottom="150dp"
-            android:background="@color/red"
-            android:gravity="center"
-            android:text="SEM COMUNICAÇÃO"
-            android:textColor="@color/white"
-            android:textSize="36dp"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <Button android:id="@+id/btnCantinhoSuperiorDireito"
+            android:text=""
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:visibility="visible"
+            android:enabled="true"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
+            android:background="?android:selectableItemBackground"/>
 
         <Button
             android:id="@+id/btnInvisivel"
@@ -159,6 +102,7 @@
             android:layout_marginTop="100dp"
             android:textSize="40dp"
             android:background="?android:selectableItemBackground"/>
+
         <Button
             android:id="@+id/buttonErro"
             android:background="@color/colorAccent"
@@ -173,16 +117,6 @@
             android:textSize="40dp"
             />
 
-
-        <Button
-            android:id="@+id/btnMagico"
-            android:text=""
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:visibility="visible"
-            android:enabled="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:background="?android:selectableItemBackground"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -303,7 +237,7 @@
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:rotation="270"
-                android:enabled="false"
+                android:enabled="true"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/temperatura_valor"/>

@@ -10,21 +10,27 @@ import java.io.*
 
 
 enum class ConfigType(val type: Int, val token: String) {
-    SERVER                 (0, "SERVER"),
-    WAITING_PEOPLE         (1, "WAITING_PEOPLE"),
-    WELCOME_VIDEO          (2, "WELCOME_VIDEO"),
-    CALL_HELP              (3, "CALL_HELP"),
-    ALCOHOL_INSTRUCTION    (4, "ALCOHOL_INSTRUCTION"),
-    FEVER_INSTRUCTION      (5, "FEVER_INSTRUCTION"),
-    ENTER_INSTRUCTION      (6, "ENTER_INSTRUCTION"),
-    ON_DEMO_VIDEO          (7, "ON_DEMO_VIDEO"),
+    SERVER               (0, "SERVER"),
+    SENSOR1_VALUE        (1, "SENSOR1_VALUE"),
+    SENSOR2_VALUE        (2, "SENSOR2_VALUE"),
+    SENSOR3_VALUE        (3, "SENSOR3_VALUE"),
+    SENSOR4_VALUE        (4, "SENSOR4_VALUE"),
 
-    SENSOR1_VALUE   (12, "SENSOR1_VALUE"),
-    SENSOR2_VALUE   (13, "SENSOR2_VALUE"),
-    SENSOR3_VALUE   (14, "SENSOR3_VALUE"),
-    SENSOR4_VALUE   (15, "SENSOR4_VALUE"),
-    TEMPERATURE_MEASURE   (16, "TEMPERATURE_MEASURE"),
-    MEDIAS_TEST     (99, "MEDIAS_TEST");
+    IDLE                 (10, "IDLE"),
+    UNKNOWN              (11, "UNKNOWN"),
+    RESTART              (12, "RESTART"),
+    WAITING_PEOPLE       (13, "WAITING_PEOPLE"),
+    WAITING_THERMOMETER  (14, "WAITING_THERMOMETER"),
+    CALL_HELP            (15, "CALL_HELP"),
+    FEVER_PROCEDURE      (16, "FEVER_PROCEDURE"),
+    ALCOHOL_PROCEDURE    (17, "ALCOHOL_PROCEDURE"),
+    WAITING_ENTER        (18, "WAITING_ENTER"),
+    CLEANING_PROCESS_1   (19, "CLEANING_PROCESS_1"),
+    CLEANING_PROCESS_2   (20, "CLEANING_PROCESS_2"),
+    CLEANING_PROCESS_3   (21, "CLEANING_PROCESS_3"),
+    WAITING_FINISH       (22, "WAITING_FINISH"),
+    GRANA_BOLSO          (23, "GRANA_BOLSO"),
+    MEDIAS_TEST          (30, "MEDIAS_TEST");
 }
 
 
@@ -37,16 +43,21 @@ object Config {
     var appContext: Context? = null
     var path : File? = null // If config file is loaded from other location it will be indicate the new location
 
-    var waitingVideo = ArrayList<Media>()
-    var welcomeVideo = ArrayList<Media>()
-    var helpVideo = ArrayList<Media>()
-    var alcoholVideo = ArrayList<Media>()
-    var feverVideo = ArrayList<Media>()
-    var enterVideo = ArrayList<Media>()
-    var videosDemo = ArrayList<Media>()
-    var mediasTempMeasure = ArrayList<Media>()
-
-    var mediasTest = ArrayList<Media>()
+    var idleMedias               = ArrayList<Media>()
+    var restartMedias            = ArrayList<Media>()
+    var unknownMedias            = ArrayList<Media>()
+    var waitingPeopleMedias      = ArrayList<Media>()
+    var waitingThermometerMedias = ArrayList<Media>()
+    var helpMedias               = ArrayList<Media>()
+    var feverMedias              = ArrayList<Media>()
+    var alcoholMedias            = ArrayList<Media>()
+    var waitingEnterMedias       = ArrayList<Media>()
+    var cleaningProcess1Medias   = ArrayList<Media>()
+    var cleaningProcess2Medias   = ArrayList<Media>()
+    var cleaningProcess3Medias   = ArrayList<Media>()
+    var WaitFinishMedias         = ArrayList<Media>()
+    var granaNoBolsoMedias       = ArrayList<Media>()
+    var testMedias               = ArrayList<Media>()
 
     var sensor1DistanciaDetecta: Int = 50
         var sensor2DistanciaDetecta: Int = 50
@@ -114,22 +125,27 @@ object Config {
             for (value in ConfigType.values()) {
                 curItem = value.token
                 when(value) {
-                    ConfigType.SERVER                  -> server      = getServer(jsonObject.getJSONObject(value.token))
-                    ConfigType.WAITING_PEOPLE           -> waitingVideo     = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.WELCOME_VIDEO           -> welcomeVideo     = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.CALL_HELP               -> helpVideo        = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.ALCOHOL_INSTRUCTION     -> alcoholVideo     = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.FEVER_INSTRUCTION       -> feverVideo       = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.ENTER_INSTRUCTION       -> enterVideo       = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.ON_DEMO_VIDEO           -> videosDemo       = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta = jsonObject.getInt(value.token)
-                    ConfigType.TEMPERATURE_MEASURE     -> mediasTempMeasure     = getVideos(jsonObject.getJSONArray(value.token))
-                    ConfigType.MEDIAS_TEST             -> mediasTest     = getVideos(jsonObject.getJSONArray(value.token))
+                    ConfigType.SERVER                  -> server                     = getServer(jsonObject.getJSONObject(value.token))
+                    ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta    = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta    = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta    = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta    = jsonObject.getInt(value.token)
 
-
+                    ConfigType.IDLE                    -> idleMedias                 = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.UNKNOWN                 -> unknownMedias              = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.RESTART                 -> restartMedias              = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.WAITING_PEOPLE          -> waitingPeopleMedias        = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.WAITING_THERMOMETER     -> waitingThermometerMedias   = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.CALL_HELP               -> helpMedias                 = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.FEVER_PROCEDURE         -> feverMedias                = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.ALCOHOL_PROCEDURE       -> alcoholMedias              = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.WAITING_ENTER           -> waitingEnterMedias         = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.CLEANING_PROCESS_1      -> cleaningProcess1Medias     = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.CLEANING_PROCESS_2      -> cleaningProcess2Medias     = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.CLEANING_PROCESS_3      -> cleaningProcess3Medias     = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.WAITING_FINISH          -> WaitFinishMedias           = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.GRANA_BOLSO             -> granaNoBolsoMedias         = getMedias(jsonObject.getJSONArray(value.token))
+                    ConfigType.MEDIAS_TEST             -> testMedias                 = getMedias(jsonObject.getJSONArray(value.token))
                 }
             }
         } catch (e: Exception) {
@@ -147,65 +163,26 @@ object Config {
             when(value) {
                 ConfigType.SERVER            -> Timber.i("%-20s = %s", value.token, server.toString())
 
-                ConfigType.WAITING_PEOPLE     -> {
-                    waitingVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
-                ConfigType.WELCOME_VIDEO     -> {
-                    welcomeVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
-                ConfigType.CALL_HELP     -> {
-                    helpVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
-                ConfigType.ALCOHOL_INSTRUCTION     -> {
-                    alcoholVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
-                ConfigType.FEVER_INSTRUCTION     -> {
-                    feverVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-                ConfigType.ENTER_INSTRUCTION     -> {
-                    enterVideo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
-                ConfigType.ON_DEMO_VIDEO     -> {
-                    videosDemo.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
                 ConfigType.SENSOR1_VALUE          -> Timber.i("%-20s = %d", value.token, sensor1DistanciaDetecta)
                 ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
                 ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
                 ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
 
-
-                ConfigType.TEMPERATURE_MEASURE     -> {
-                    mediasTempMeasure.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s] Duração:[%d]", value.token, it.volume, it.filename, it.tempoApresentacao)
-                    }
-                }
-
-
-                ConfigType.MEDIAS_TEST     -> {
-                    mediasTest.forEach {
-                        Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)
-                    }
-                }
-
+                ConfigType.IDLE                -> { idleMedias               .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.UNKNOWN             -> { unknownMedias            .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.RESTART             -> { restartMedias            .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.WAITING_PEOPLE      -> { waitingPeopleMedias      .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.WAITING_THERMOMETER -> { waitingThermometerMedias .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.CALL_HELP           -> { helpMedias               .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.FEVER_PROCEDURE     -> { feverMedias              .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.ALCOHOL_PROCEDURE   -> { alcoholMedias            .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.WAITING_ENTER       -> { waitingEnterMedias       .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.CLEANING_PROCESS_1  -> { cleaningProcess1Medias   .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.CLEANING_PROCESS_2  -> { cleaningProcess2Medias   .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.CLEANING_PROCESS_3  -> { cleaningProcess3Medias   .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.WAITING_FINISH      -> { WaitFinishMedias         .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.GRANA_BOLSO         -> { granaNoBolsoMedias       .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
+                ConfigType.MEDIAS_TEST         -> { testMedias               .forEach { Timber.i("%-20s Volume: %d File:[%s]", value.token, it.volume, it.filename)} }
             }
         }
     }
@@ -250,7 +227,7 @@ object Config {
         }
     }
 
-    private fun getVideos(jsonArray: JSONArray): ArrayList<Media> {
+    private fun getMedias(jsonArray: JSONArray): ArrayList<Media> {
         val medias = ArrayList<Media>()
         for ( x in 0 until jsonArray.length()) {
             var mediaName = jsonArray.getJSONObject(x).getString("filename")
@@ -329,6 +306,14 @@ data class Media(var filename: String="") {
                 }
             }
 
+            Media.AUDIO -> {
+                if ( Config.path != null ) {
+                    filename = Config.path.toString() + "/" + filename
+                } else {
+                    filename = "android.resource://" + BuildConfig.APPLICATION_ID + "/raw/" + filename
+                }
+            }
+
         }
 
 
@@ -345,6 +330,7 @@ data class Media(var filename: String="") {
                 "mp4" -> {
                     type = Media.VIDEO
                 }
+                "amr",
                 "mp3" -> {
                     type = Media.AUDIO
                 }
