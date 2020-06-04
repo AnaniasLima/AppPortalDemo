@@ -18,6 +18,8 @@
 	"RESERVATORIO_2"   : 500,
 	"RESERVATORIO_3"   : 0,
 
+	"GERENCIA_ENTRADA_E_SAIDA"		: 2,
+
 
 
 	"IDLE"      : [ { "volume": 99, "filename": "nana.png"} ],

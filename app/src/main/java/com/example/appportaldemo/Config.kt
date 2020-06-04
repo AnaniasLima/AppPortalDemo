@@ -10,12 +10,8 @@ import java.io.*
 
 
 enum class ConfigType(val type: Int, val token: String) {
-    SERVER               (0, "SERVER"),
-    SENSOR1_VALUE        (1, "SENSOR1_VALUE"),
-    SENSOR2_VALUE        (2, "SENSOR2_VALUE"),
-    SENSOR3_VALUE        (3, "SENSOR3_VALUE"),
-    SENSOR4_VALUE        (4, "SENSOR4_VALUE"),
-
+    SERVER                      (0, "SERVER"),
+    GERENCIA_ENTRADA_E_SAIDA    (1, "GERENCIA_ENTRADA_E_SAIDA"),
 
     RESERVATORIO_GEL      (5, "RESERVATORIO_GEL"),
     RESERVATORIO_1        (6, "RESERVATORIO_1"),
@@ -67,11 +63,7 @@ object Config {
     var granaNoBolsoMedias       = ArrayList<Media>()
     var testMedias               = ArrayList<Media>()
 
-    var sensor1DistanciaDetecta: Int = 50
-    var sensor2DistanciaDetecta: Int = 50
-    var sensor3DistanciaDetecta: Int = 50
-    var sensor4DistanciaDetecta: Int = 50
-
+    var gerenciaEntradaESaida : Int = 0
     var capacidadeReservatorioGel: Int = 0
     var capacidadeReservatorio1: Int = 0
     var capacidadeReservatorio2: Int = 0
@@ -141,10 +133,8 @@ object Config {
                 curItem = value.token
                 when(value) {
                     ConfigType.SERVER                  -> server                     = getServer(jsonObject.getJSONObject(value.token))
-                    ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta    = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta    = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta    = jsonObject.getInt(value.token)
-                    ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta    = jsonObject.getInt(value.token)
+
+                    ConfigType.GERENCIA_ENTRADA_E_SAIDA-> gerenciaEntradaESaida       = jsonObject.getInt(value.token)
 
                     ConfigType.RESERVATORIO_GEL         -> capacidadeReservatorioGel  = jsonObject.getInt(value.token)
                     ConfigType.RESERVATORIO_1           -> capacidadeReservatorio1    = jsonObject.getInt(value.token)
@@ -152,9 +142,6 @@ object Config {
                     ConfigType.RESERVATORIO_3           -> capacidadeReservatorio3    = jsonObject.getInt(value.token)
 
                     ConfigType.ALARME_FEBRE             -> alarmeFebre                = jsonObject.getInt(value.token)
-
-
-
 
                     ConfigType.IDLE                    -> idleMedias                 = getMedias(jsonObject.getJSONArray(value.token))
                     ConfigType.UNKNOWN                 -> unknownMedias              = getMedias(jsonObject.getJSONArray(value.token))
@@ -186,13 +173,8 @@ object Config {
     private fun printConfig() {
         for (value in ConfigType.values()) {
             when(value) {
-                ConfigType.SERVER            -> Timber.i("%-20s = %s", value.token, server.toString())
-
-                ConfigType.SENSOR1_VALUE          -> Timber.i("%-20s = %d", value.token, sensor1DistanciaDetecta)
-                ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
-                ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
-                ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
-
+                ConfigType.SERVER                  -> Timber.i("%-20s = %s", value.token, server.toString())
+                ConfigType.GERENCIA_ENTRADA_E_SAIDA-> Timber.i("%-20s = %d", value.token, gerenciaEntradaESaida)
 
                 ConfigType.RESERVATORIO_GEL        -> Timber.i("%-20s = %d", value.token, capacidadeReservatorioGel)
                 ConfigType.RESERVATORIO_1          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio1)

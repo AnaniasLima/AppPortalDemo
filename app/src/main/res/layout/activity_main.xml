@@ -127,90 +127,58 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/painel_inferior"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="120dp"
         android:background="@color/fundo"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/painel_suporte">
 
         <Button android:id="@+id/btn_sensor1"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/fundo"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/sensor_com_gente" />
-        <TextView android:id="@+id/tv_sensor1"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
             android:text="Presença"
             android:textColor="@color/blue"
-            android:textSize="20dp"
-            app:layout_constraintTop_toBottomOf="@+id/btn_sensor1"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/btn_sensor1"
-            app:layout_constraintEnd_toEndOf="@+id/btn_sensor1"
-            />
+            android:gravity="bottom"
+            android:textSize="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/sensor_sem_gente" />
 
         <Button android:id="@+id/btn_sensor2"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/fundo"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_sensor1"
-            app:srcCompat="@drawable/sensor_com_gente" />
-        <TextView android:id="@+id/tv_sensor2"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
             android:text="Entrada"
             android:textColor="@color/blue"
-            android:textSize="20sp"
-            app:layout_constraintTop_toBottomOf="@+id/btn_sensor2"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/btn_sensor2"
-            app:layout_constraintEnd_toEndOf="@+id/btn_sensor2"
-            />
+            android:gravity="bottom"
+            android:textSize="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btn_sensor1"
+            app:srcCompat="@drawable/sensor_sem_gente" />
 
         <Button android:id="@+id/btn_sensor3"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/fundo"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_sensor2"
-            app:srcCompat="@drawable/sensor_com_gente" />
-        <TextView android:id="@+id/tv_sensor3"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
             android:text="Saida"
             android:textColor="@color/blue"
-            android:textSize="20sp"
-            app:layout_constraintTop_toBottomOf="@+id/btn_sensor3"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/btn_sensor3"
-            app:layout_constraintEnd_toEndOf="@+id/btn_sensor3"
-            />
+            android:gravity="bottom"
+            android:textSize="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btn_sensor2"
+            app:srcCompat="@drawable/sensor_sem_gente" />
 
         <Button android:id="@+id/btn_cleaning_area"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/fundo"
+            android:text="Cleanning"
+            android:textColor="@color/blue"
+            android:gravity="bottom"
+            android:textSize="16dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn_sensor3"
             app:srcCompat="@drawable/cleaning_area_off" />
-        <TextView android:id="@+id/tv_cleaning_area"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:gravity="center"
-            android:text="Cleanning"
-            android:textColor="@color/blue"
-            android:textSize="20sp"
-            app:layout_constraintTop_toBottomOf="@+id/btn_cleaning_area"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/btn_cleaning_area"
-            app:layout_constraintEnd_toEndOf="@+id/btn_cleaning_area"
-            />
 
         <!--  ============================================================ -->
         <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/temperatura_layout"
@@ -246,6 +214,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Temp"
+                android:textColor="@color/blue"
                 android:gravity="center"
                 android:textSize="20sp"
                 android:layout_marginTop="30dp"
@@ -266,21 +235,14 @@
 
 
 
-        <Button android:id="@+id/btn_door_in"
-            android:layout_width="15dp"
-            android:layout_height="100dp"
+        <Button android:id="@+id/btn_led"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/fundo"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn_alcohol_dispenser"
-            app:srcCompat="@drawable/door_red" />
+            app:srcCompat="@drawable/led_white" />
 
-        <Button android:id="@+id/btn_door_out"
-            android:layout_width="15dp"
-            android:layout_height="100dp"
-            android:background="@color/fundo"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_door_in"
-            app:srcCompat="@drawable/door_red" />
 
         <Button android:id="@+id/btn_money"
             android:layout_width="wrap_content"
@@ -288,7 +250,7 @@
             android:background="@color/fundo"
             android:enabled="false"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_door_out"
+            app:layout_constraintStart_toEndOf="@+id/btn_led"
             app:srcCompat="@drawable/dindin" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

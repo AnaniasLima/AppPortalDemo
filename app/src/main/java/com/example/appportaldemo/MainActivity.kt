@@ -1,17 +1,20 @@
 package com.example.appportaldemo
 
+import android.R.attr.button
 import android.media.MediaPlayer
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.Window
 import android.view.WindowManager
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
-import java.io.*
+import java.io.File
 
 
 enum class ErrorType(val type: Int, val message: String) {
@@ -153,8 +156,7 @@ class MainActivity : AppCompatActivity() {
 
         ajustaSensores(false, false)
 
-        btn_door_in.setBackgroundResource(R.drawable.door_red)
-        btn_door_out.setBackgroundResource(R.drawable.door_red)
+        btn_led.setBackgroundResource(R.drawable.led_white)
         btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
         btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
         btn_money.setBackgroundResource(R.drawable.dindin_futuro)
@@ -201,7 +203,7 @@ class MainActivity : AppCompatActivity() {
     fun ajustaSensores(sendToArduino:Boolean, simulaSensor4:Boolean) {
 
         // Todos os sensores vao desativar o sensor4
-        var s4 = Config.sensor4DistanciaDetecta + 10
+        var s4 = 0
 
         btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
         btn_sensor2.setBackgroundResource(R.drawable.sensor_sem_gente)
@@ -220,9 +222,9 @@ class MainActivity : AppCompatActivity() {
         // So manda se for alterado pela interface
         if ( sendToArduino) {
             if ( simulaSensor4 ) {
-                s4 = Config.sensor4DistanciaDetecta - 10
+                s4 = 1
             }
-            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%03d,%03d,%03d,%03d",
+            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%d,%d,%d,%d",
                 CleaningMachine.sensor1Status, CleaningMachine.sensor2Status, CleaningMachine.sensor3Status, s4))
             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         }
@@ -325,50 +327,91 @@ class MainActivity : AppCompatActivity() {
         // Rodape -----------------------------------
         // --------------------------------------------------
 
+// this goes wherever you setup your button listener:
 
-        btn_sensor1.setOnClickListener  {
-            Timber.i("btn_sensor1 ${CleaningMachine.sensor1Status}")
-            if ( CleaningMachine.sensor1Status < Config.sensor1DistanciaDetecta ) {
-                CleaningMachine.sensor1Status = Config.sensor1DistanciaDetecta + 10
-            } else {
-                CleaningMachine.sensor1Status = Config.sensor1DistanciaDetecta - 10
-                CleaningMachine.sensor2Status = Config.sensor2DistanciaDetecta + 10
-                CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta + 10
+        // this goes wherever you setup your button listener:
+        btn_sensor1.setOnTouchListener(OnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                CleaningMachine.sensor1Status = 1
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor1 para LIGADO")
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                CleaningMachine.sensor1Status = 0
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor1 para DESLIGADO")
             }
-            ajustaSensores(true, false)
-        }
+            true
+        })
 
-        btn_sensor2.setOnClickListener  {
-            Timber.i("btn_sensor2 ${CleaningMachine.sensor2Status}")
-            if ( CleaningMachine.sensor2Status < Config.sensor2DistanciaDetecta ) {
-                CleaningMachine.sensor2Status = Config.sensor2DistanciaDetecta + 10
-            } else {
-                CleaningMachine.sensor1Status = Config.sensor1DistanciaDetecta + 10
-                CleaningMachine.sensor2Status = Config.sensor2DistanciaDetecta - 10
-                CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta + 10
+        btn_sensor2.setOnTouchListener(OnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                CleaningMachine.sensor2Status = 1
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor2 para LIGADO")
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                CleaningMachine.sensor2Status = 0
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor2 para DESLIGADO")
             }
-            ajustaSensores(true, false)
-        }
+            true
+        })
 
-        btn_sensor3.setOnClickListener  {
-            Timber.i("btn_sensor3 ${CleaningMachine.sensor3Status}")
-            if ( CleaningMachine.sensor3Status < Config.sensor3DistanciaDetecta ) {
-                CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta + 10
-            } else {
-                CleaningMachine.sensor1Status = Config.sensor1DistanciaDetecta + 10
-                CleaningMachine.sensor2Status = Config.sensor2DistanciaDetecta + 10
-                CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta - 10
+        btn_sensor3.setOnTouchListener(OnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                CleaningMachine.sensor3Status = 1
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor3 para LIGADO")
+            } else if (event.action == MotionEvent.ACTION_UP) {
+                CleaningMachine.sensor3Status = 0
+                ajustaSensores(true, false)
+                Timber.i("mudou btn_sensor3 para DESLIGADO")
             }
-            ajustaSensores(true, false)
-        }
+            true
+        })
+
+//        btn_sensor1.setOnClickListener  {
+//            Timber.i("btn_sensor1 ${CleaningMachine.sensor1Status}")
+//            if ( CleaningMachine.sensor1Status > 0 ) {
+//                CleaningMachine.sensor1Status = 0
+//            } else {
+//                CleaningMachine.sensor1Status = 1
+//                CleaningMachine.sensor2Status = 0
+//                CleaningMachine.sensor3Status = 0
+//            }
+//            ajustaSensores(true, false)
+//        }
+//
+//        btn_sensor2.setOnClickListener  {
+//            Timber.i("btn_sensor2 ${CleaningMachine.sensor2Status}")
+//            if ( CleaningMachine.sensor2Status > 0 ) {
+//                CleaningMachine.sensor2Status = 0
+//            } else {
+//                CleaningMachine.sensor1Status = 0
+//                CleaningMachine.sensor2Status = 1
+//                CleaningMachine.sensor3Status = 1
+//            }
+//            ajustaSensores(true, false)
+//        }
+//
+//        btn_sensor3.setOnClickListener  {
+//            Timber.i("btn_sensor3 ${CleaningMachine.sensor3Status}")
+//            if ( CleaningMachine.sensor3Status > 0 ) {
+//                CleaningMachine.sensor3Status = 0
+//            } else {
+//                CleaningMachine.sensor1Status = 0
+//                CleaningMachine.sensor2Status = 0
+//                CleaningMachine.sensor3Status = 1
+//            }
+//            ajustaSensores(true, false)
+//        }
 
 
         btn_money.setOnClickListener  {
             Timber.i("btn_money ${CleaningMachine.sensor2Status}")
-            if ( (CleaningMachine.sensor2Status < Config.sensor2DistanciaDetecta) ||  (CleaningMachine.sensor3Status < Config.sensor3DistanciaDetecta) ) {
-                CleaningMachine.sensor1Status = Config.sensor1DistanciaDetecta + 10
-                CleaningMachine.sensor2Status = Config.sensor2DistanciaDetecta + 10
-                CleaningMachine.sensor3Status = Config.sensor3DistanciaDetecta + 10
+            if ( (CleaningMachine.sensor2Status > 0 )  ||  (CleaningMachine.sensor3Status > 0) ) {
+                CleaningMachine.sensor1Status = 0
+                CleaningMachine.sensor2Status = 0
+                CleaningMachine.sensor3Status = 0
             }
             ajustaSensores(true, false)
         }

@@ -84,14 +84,18 @@ object CleaningMachine {
 
     var questionDelayList = ArrayList<String>()
 
-    var sensor1Status = 255
-    var sensor2Status = 255
-    var sensor3Status = 255
-    var sensor4Status = 255
+    var sensorAnalogico1 = 0F
+    var sensorAnalogico2 = 0F
+
+    var sensor1Status = 0
+    var sensor2Status = 0
+    var sensor3Status = 0
+    var sensor4Status = 0
 
     var balanca1Status = 0
     var balanca2Status = 0
     var balanca3Status = 0
+
 
     var waitingThermometer : Boolean = false
     var temperaturaMedida : Float = 0F
@@ -150,10 +154,10 @@ object CleaningMachine {
 
     fun pessoaEmSensor(sensor : Sensor) : Boolean {
         when(sensor) {
-            Sensor.PRESENCA -> if ( sensor1Status < Config.sensor1DistanciaDetecta ) return true
-            Sensor.ENTRADA ->  if ( sensor2Status < Config.sensor2DistanciaDetecta ) return true
-            Sensor.SAIDA ->    if ( sensor3Status < Config.sensor3DistanciaDetecta ) return true
-            Sensor.ALCOHOL ->  if ( sensor4Status < Config.sensor4DistanciaDetecta ) {
+            Sensor.PRESENCA -> if ( sensor1Status > 0 ) return true
+            Sensor.ENTRADA ->  if ( sensor2Status > 0) return true
+            Sensor.SAIDA ->    if ( sensor3Status > 0) return true
+            Sensor.ALCOHOL ->  if ( sensor4Status > 0) {
                 Timber.e("WWW 002 (pessoaEmSensor) CleaningMachine.sensor4Status esta = ${CleaningMachine.sensor4Status}")
                 return true
             }
@@ -331,18 +335,24 @@ object CleaningMachine {
     }
 
     fun ligaIndicadorSaida(tipo:Int) {
-        when (tipo) {
-            0 -> {
-                ScreenLog.add(LogType.TO_HISTORY, "Led saida Off")
-                ArduinoDevice.requestToSend(EventType.FW_LED, "1,7")
-            }
-            1 -> {
-                ScreenLog.add(LogType.TO_HISTORY, "Led saida VERMELHO")
-                ArduinoDevice.requestToSend(EventType.FW_LED, "1,1")
-            }
-            2 -> {
-                ArduinoDevice.requestToSend(EventType.FW_LED, "1,2")
-                ScreenLog.add(LogType.TO_HISTORY, "Led saida VERDE")
+
+        if ( Config.gerenciaEntradaESaida > 0) {
+            when (tipo) {
+                0 -> {
+                    buttonAdjust((mainActivity as MainActivity).btn_led, true, background = R.drawable.led_white)
+                    ScreenLog.add(LogType.TO_HISTORY, "Led saida Off")
+                    ArduinoDevice.requestToSend(EventType.FW_LED, "1,7")
+                }
+                1 -> {
+                    buttonAdjust((mainActivity as MainActivity).btn_led, true, background = R.drawable.led_red)
+                    ScreenLog.add(LogType.TO_HISTORY, "Led saida VERMELHO")
+                    ArduinoDevice.requestToSend(EventType.FW_LED, "1,1")
+                }
+                2 -> {
+                    buttonAdjust((mainActivity as MainActivity).btn_led, true, background = R.drawable.led_green)
+                    ArduinoDevice.requestToSend(EventType.FW_LED, "1,2")
+                    ScreenLog.add(LogType.TO_HISTORY, "Led saida VERDE")
+                }
             }
         }
     }
@@ -474,8 +484,12 @@ object CleaningMachine {
                 if ( flag == InOut.OUT) {
                     cancelRunFaseTimer()
                 } else {
+                    var temperaturaMedida = sensorAnalogico1
 
-                    if ( temperaturaFake < 37.3F) {
+                    if ( temperaturaMedida == -1F ) {
+                        temperaturaMedida = temperaturaFake.toFloat()
+                    }
+                    if ( temperaturaMedida < 37.3F) {
                         changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_OUT)
                     } else {
                         changeCurrentState(MachineState.FEVER_PROCEDURE, FROM_OUT)
@@ -493,11 +507,7 @@ object CleaningMachine {
                 if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(timeout.toLong() )
-
-                // Prepara botão de fundo com a temperatura medida
-//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
                 buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_on)
-
                 buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
                 aguardando(MachineState.ALCOHOL_PROCEDURE, bma_mostra_temperatura)
             }
@@ -522,11 +532,7 @@ object CleaningMachine {
                 if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(5000L )
-
-                // Oculta botao btn_show_full_screen
-//                buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, false)
-
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
+                ligaIndicadorSaida(1)
 
                 buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
                 aguardando(MachineState.FEVER_PROCEDURE, bma_mostra_temperatura)
@@ -537,6 +543,8 @@ object CleaningMachine {
             InOut.TIMEOUT-> {
                 aguardando(MachineState.IDLE)
                 alarmeFebre(0)
+                ligaIndicadorSaida(0)
+
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true)
 
                 if (flag ==  InOut.TIMEOUT) {
@@ -555,22 +563,27 @@ object CleaningMachine {
                 pessoaDentro = false
                 ejetaProduto1()
 
+                if ( Config.gerenciaEntradaESaida == 1) {
+                    ligaIndicadorSaida(2)
+                }
                 desiredState = receivedState
                 initRunFaseTimer(10000L )
-
                 aguardando(MachineState.WAITING_ENTER)
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
             }
 
             InOut.OUT -> {
+                if ( Config.gerenciaEntradaESaida == 1) {
+                    ligaIndicadorSaida(0)
+                }
                 aguardando(MachineState.IDLE)
                 cancelRunFaseTimer()
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
             }
 
             InOut.TIMEOUT -> {
+                if ( Config.gerenciaEntradaESaida == 1) {
+                    ligaIndicadorSaida(0)
+                }
                 aguardando(MachineState.IDLE)
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
                 changeCurrentState(MachineState.WAITING_PEOPLE, FROM_OUT)
             }
         }
@@ -604,8 +617,8 @@ object CleaningMachine {
 
         var nextState = receivedState
 
-        if        ( receivedState == MachineState.ALCOHOL_PROCEDURE ) {
-            nextState =  MachineState.WAITING_ENTER
+        if  ( receivedState == MachineState.ALCOHOL_PROCEDURE ) {
+            nextState = MachineState.WAITING_ENTER
         } else if ( receivedState == MachineState.WAITING_ENTER ) {
             nextState =  MachineState.CLEANING_PROCESS_1
         } else if ( receivedState == MachineState.CLEANING_PROCESS_1 ) {
@@ -615,8 +628,6 @@ object CleaningMachine {
         } else if ( receivedState == MachineState.CLEANING_PROCESS_3 ) {
             nextState =  MachineState.WAITING_FINISH
         }
-
-
 
         if ( nextState == MachineState.WAITING_ENTER ) {
             if ((Config.capacidadeReservatorio1 > 0) || (Config.capacidadeReservatorio2 > 0) || (Config.capacidadeReservatorio3 > 0) ) {
@@ -703,7 +714,6 @@ object CleaningMachine {
                 ligaIndicadorSaida(2)
                 initRunFaseTimer(10000L )
                 aguardando(MachineState.WAITING_FINISH)
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_green)
                 buttonAdjust((mainActivity as MainActivity).btn_money, true)
             }
 
@@ -711,7 +721,6 @@ object CleaningMachine {
                 cancelRunFaseTimer()
                 ligaIndicadorSaida(0)
                 aguardando(MachineState.IDLE)
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
                 buttonAdjust((mainActivity as MainActivity).btn_money, false)
             }
 
@@ -719,7 +728,6 @@ object CleaningMachine {
                 ligaIndicadorSaida(0)
                 aguardando(MachineState.IDLE)
 
-                buttonAdjust((mainActivity as MainActivity).btn_door_in, true, background = R.drawable.door_red)
                 buttonAdjust((mainActivity as MainActivity).btn_money, false)
 
                 changeCurrentState(MachineState.GRANA_BOLSO, FROM_OUT)
@@ -733,7 +741,7 @@ object CleaningMachine {
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
-                initRunFaseTimer(3000L )
+                initRunFaseTimer(1000L )
                 aguardando(MachineState.GRANA_BOLSO)
                 buttonAdjust((mainActivity as MainActivity).btn_money, true, background = R.drawable.dindin)
             }
@@ -928,10 +936,14 @@ object CleaningMachine {
                         Timber.e("WWW 004 processReceivedResponse vai fazer CleaningMachine.sensor4Status = ${response.s4}")
                     }
 
-                    if ( response.s1 < Config.sensor1DistanciaDetecta ) {
+                    if ( response.f1 < 0 ) {
                         // gerar temperatura fake
                         gerarTemperaturaFake=1
                     }
+
+                    sensorAnalogico1 = response.f1
+                    sensorAnalogico2 = response.f2
+
                     sensor1Status = response.s1
                     sensor2Status = response.s2
                     sensor3Status = response.s3
@@ -989,16 +1001,35 @@ object CleaningMachine {
                         MachineState.ALCOHOL_PROCEDURE -> {
                             if ( pessoaEmSensor(Sensor.ALCOHOL) ) {
                                 Timber.e("WWW 005 testou e disse que tem mão no Alcool vai para WAITING_ENTER")
-                                nextState = nextCleaningProcess()
-                                changeCurrentState(nextState, FROM_EXT)
+                                if ( Config.gerenciaEntradaESaida == 0) {
+                                    changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
+                                } else {
+                                    nextState = nextCleaningProcess()
+                                    changeCurrentState(nextState, FROM_EXT)
+                                }
+
+                            } else {
+                                if ( pessoaEmSensor(Sensor.ENTRADA) ) {
+                                    if ( Config.gerenciaEntradaESaida == 0) {
+                                        changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
+                                    } else {
+                                        nextState = nextCleaningProcess()
+                                        changeCurrentState(nextState, FROM_EXT)
+                                        pessoaDentro = true
+                                    }
+                                }
                             }
                         }
 
                         MachineState.WAITING_ENTER -> {
                             if ( pessoaEmSensor(Sensor.ENTRADA) ) {
-                                nextState = nextCleaningProcess()
-                                changeCurrentState(nextState, FROM_EXT)
-                                pessoaDentro = true
+                                if ( Config.gerenciaEntradaESaida <= 1) {
+                                    changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
+                                } else {
+                                    nextState = nextCleaningProcess()
+                                    changeCurrentState(nextState, FROM_EXT)
+                                    pessoaDentro = true
+                                }
                             }
                         }
 

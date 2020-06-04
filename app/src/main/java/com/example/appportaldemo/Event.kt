@@ -52,6 +52,8 @@ data class EventResponse(
     var action: String = "",
     var value: Int = 0,
     var error_n: Int = 0,
+    var f1: Float = 0F,
+    var f2: Float = 0F,
     var s1: Int = 0,
     var s2: Int = 0,
     var s3: Int = 0,
