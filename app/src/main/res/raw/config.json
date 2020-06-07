@@ -6,10 +6,10 @@
 		"password": "abc"
 	},
 
-	"SENSOR1_VALUE": 50,
-	"SENSOR2_VALUE": 50,
-	"SENSOR3_VALUE": 50,
-	"SENSOR4_VALUE": 50,
+	"SENSOR1_VALUE": 10,
+	"SENSOR2_VALUE": 10,
+	"SENSOR3_VALUE": 10,
+	"SENSOR4_VALUE": 10,
 
 	"ALARME_FEBRE" : "0",
 
@@ -47,7 +47,7 @@
 
 	"ALCOHOL_PROCEDURE"    : [
 		{ "volume": 99, "filename": "entrada_use_gel.mp3" },
-		{ "volume": 99, "filename": "no_fever1.png", "duracao" :  1500},
+		{ "volume": 99, "filename": "no_fever1.png", "duracao" :  5000},
 		{ "volume": 99, "filename": "no_fever2.png", "duracao" : 10000}
 	],
 
@@ -68,7 +68,7 @@
 		{ "volume": 99, "filename": "saida_liberada.png"}
 	],
 
-	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "grana_bolso.png"} ],
+	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "bom_trabalho.png" } ],
 
 	"MEDIAS_TEST"          : [
 		{ "volume": 99, "filename": "apresentacao.mp3" },

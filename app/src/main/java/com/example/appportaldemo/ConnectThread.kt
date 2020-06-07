@@ -173,6 +173,15 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             if ( connectInBackground() ) {
                 finishThread = false
                 pendingResponse = 0
+
+                sleep(500)
+                ArduinoDevice.requestToSend(EventType.FW_CONFIG, String.format("S,%03d,%03d,%03d,%03d",
+                    Config.sensor1DistanciaDetecta,
+                    Config.sensor2DistanciaDetecta,
+                    Config.sensor3DistanciaDetecta,
+                    Config.sensor4DistanciaDetecta))
+
+
                 while ( ! finishThread ) {
                     if ( EVENT_LIST.isEmpty() ) {
                         sleep(WAITTIME)
@@ -186,7 +195,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                         // Eventualmente acontece de mandar pacotes e não receber resposta (não sei por que, ,as acontece)
                         // sendo assim, se mandarmos mais de 2 pacotes e não recebermos resposta, vamos desconectar
                         // e esperar a reconexão automatica
-                        if ( pendingResponse++ > 2 ) {
+                        if ( pendingResponse++ > 10 ) {
                             // Não estamos recebendo resposta
                             // Vamos desconectar
                             break
@@ -226,6 +235,14 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             lastEventTimestamp = curEvent.timestamp
 
             val pktStr: String = Event.getCommandData(curEvent)
+
+            // "numPktResp":11838,"packetNumber":11880 com temporização de 250L
+            // Ou seja o arduin perdeu 38 pacotes e 11.000
+            // TODO: Colocar wack e parar medição ultrason durante pacote
+
+            val startBytes =  byteArrayOf( 2, 2, 2) // STX
+
+            usbSerialDevice?.write(startBytes)
             usbSerialDevice?.write(pktStr.toByteArray())
 
             if ( ! communicationModeDummy ) {

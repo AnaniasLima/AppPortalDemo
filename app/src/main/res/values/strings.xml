@@ -24,7 +24,9 @@
     <string name="billAcceptorReset">Noteiro\nReset</string>
 
     <string name="demoOn">Demo ON</string>
-    <string name="statusRequest">Status?</string>
+    <string name="statusRequest">Status</string>
+    <string name="simulaRequest">Simula</string>
+    <string name="modoSuporte">Suporte\nON</string>
 
     <string name="startStateMachine">Start\nFSM</string>
     <string name="stopStateMachine">Stop\nFSM</string>

@@ -5,11 +5,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Handler
 import android.provider.Settings.Global.getString
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.felhr.usbserial.UsbSerialDevice
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.util.*
@@ -110,23 +112,16 @@ object ArduinoDevice {
     fun onEventResponse(eventResponse: EventResponse) {
 
         val dif = eventResponse.packetNumber.toInt() - eventResponse.numPktResp.toInt()
-
         if ( dif != lastDif) {
 
-            if ( (eventResponse.packetNumber.toInt() == 1) && (eventResponse.numPktResp.toInt() > 1) )  {
-               // Reiniciando com Arduino já em execução, vamos ajustar o nosso numero
-                Event.pktNumber = eventResponse.numPktResp.toInt()
+            if ( eventResponse.numPktResp.toInt() == 1) {
+                Timber.e("========= Arduino resetou ======")
+                Event.pktNumber = 1
+                mostraEmHistory("*** Arduino resetou")
             } else {
-                if ( eventResponse.numPktResp.toInt() == 1) {
-                    Timber.e("========= Arduino resetou ======")
-                    Event.pktNumber = 1
-                    mostraEmHistory("*** Arduino resetou")
-                } else {
-                    Timber.e("========= Perdeu pacote ======")
-                    lastDif = dif
-                    mostraEmHistory("Perdeu ${lastDif} pacotes (${eventResponse.packetNumber})")
-
-                }
+                Timber.e("========= Perdeu pacote ======")
+                lastDif = dif
+                mostraEmHistory("Perdeu ${lastDif} pacotes (${eventResponse.packetNumber})")
             }
 
         }
@@ -134,6 +129,9 @@ object ArduinoDevice {
         when ( eventResponse.eventType ) {
             EventType.FW_EJECT -> {
                 Timber.e("FW_EJECT =====> ${eventResponse.toString()}")
+            }
+            EventType.FW_CONFIG -> {
+                Timber.e("FW_CONFIG =====> ${eventResponse.toString()}")
             }
             EventType.FW_DUMMY -> {
                 Timber.e("FW_DUMMY =====> ${eventResponse.toString()}")
@@ -157,13 +155,24 @@ object ArduinoDevice {
 
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Timber.i("WWW------------------------- BroadcastReceiver")
             if ( intent != null && usbManager != null) {
-                mostraNaTela("WWW------------------------- intent.action = " + intent.action.toString())
+                Timber.i("WWW------------------------- intent.action = " + intent.action.toString())
+                mostraNaTela("------------------------- intent.action = " + intent.action.toString())
                 when (intent.action!!) {
                     ACTION_USB_PERMISSION -> {
+
                         val granted: Boolean = intent.extras!!.getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED)
-                        mostraNaTela("ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted.toString()}")
+                        Timber.i("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted.toString()}")
+                        mostraNaTela("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted.toString()}")
+
+                        val granted1: Boolean = intent.extras!!.getBoolean(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+                        Timber.i("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted1.toString()}")
+                        mostraNaTela("ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted1.toString()}")
+
                         usbSerialImediateChecking(200)
+
+
                     }
                     UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
                         (mainActivity as MainActivity).jaViuUSB = true
@@ -221,7 +230,7 @@ object ArduinoDevice {
                     }
 
                     mainActivity?.runOnUiThread {
-                        (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.INVISIBLE
+                        (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.GONE
                     }
 
 
@@ -273,6 +282,9 @@ object ArduinoDevice {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_DUMMY -> {
+                        ret = connectThread!!.requestToSend(eventType, action=action)
+                    }
+                    EventType.FW_CONFIG -> {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_EJECT -> {

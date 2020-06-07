@@ -1,6 +1,6 @@
 package com.example.appportaldemo
 
-import android.R.attr.button
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
@@ -26,7 +26,7 @@ enum class ErrorType(val type: Int, val message: String) {
 
 
 class MainActivity : AppCompatActivity() {
-    var temperaturaMedida: Float = 0F
+    var temperaturaFake: Float = 0F
     var contaMagica = 0
     var jaViuUSB:Boolean=false
 
@@ -163,20 +163,20 @@ class MainActivity : AppCompatActivity() {
 
         temperatura_seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                temperaturaMedida = 35F + ((progress * 5F) / 100F)
-                temperatura_valor.text = String.format("%.2f°", temperaturaMedida)
-                if ( temperaturaMedida > 37F ) {
+                temperaturaFake = 35F + ((progress * 5F) / 100F)
+                temperatura_valor.text = String.format("%.2f°", temperaturaFake)
+                if ( temperaturaFake > 37F ) {
                     temperatura_valor.setTextColor( getColor(R.color.red))
                 } else {
                     temperatura_valor.setTextColor( getColor(R.color.blue))
                 }
-                println("${progress.toString()} - ${String.format("%.2f", temperaturaMedida)}")
+                println("${progress.toString()} - ${String.format("%.2f", temperaturaFake)}")
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) { }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 if (  CleaningMachine.waitingThermometer ) {
-                    CleaningMachine.onThermometerFinished(temperaturaMedida)
+                    CleaningMachine.onThermometerFinished(temperaturaFake)
                 }
             }
         })
@@ -203,7 +203,9 @@ class MainActivity : AppCompatActivity() {
     fun ajustaSensores(sendToArduino:Boolean, simulaSensor4:Boolean) {
 
         // Todos os sensores vao desativar o sensor4
-        var s4 = 0
+        var s4 = CleaningMachine.sensor4Status
+
+
 
         btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
         btn_sensor2.setBackgroundResource(R.drawable.sensor_sem_gente)
@@ -219,16 +221,52 @@ class MainActivity : AppCompatActivity() {
             btn_sensor3.setBackgroundResource(R.drawable.sensor_com_gente)
         }
 
+        if ( CleaningMachine.sensor4Status > 0 ) {
+            btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_on)
+        } else {
+            btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
+        }
+
+
+
         // So manda se for alterado pela interface
         if ( sendToArduino) {
             if ( simulaSensor4 ) {
-                s4 = 1
+//                s4 = 1
             }
             ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%d,%d,%d,%d",
                 CleaningMachine.sensor1Status, CleaningMachine.sensor2Status, CleaningMachine.sensor3Status, s4))
             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         }
     }
+
+
+    fun mostraSensores( ) {
+
+        btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
+        btn_sensor2.setBackgroundResource(R.drawable.sensor_sem_gente)
+        btn_sensor3.setBackgroundResource(R.drawable.sensor_sem_gente)
+
+        if ( CleaningMachine.pessoaEmSensor(Sensor.PRESENCA) ) {
+            btn_sensor1.setBackgroundResource(R.drawable.sensor_com_gente)
+        }
+        if ( CleaningMachine.pessoaEmSensor(Sensor.ENTRADA) ) {
+            btn_sensor2.setBackgroundResource(R.drawable.sensor_com_gente)
+        }
+        if ( CleaningMachine.pessoaEmSensor(Sensor.SAIDA) ) {
+            btn_sensor3.setBackgroundResource(R.drawable.sensor_com_gente)
+        }
+
+        if ( CleaningMachine.sensor4Status > 0 ) {
+            btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_on)
+        } else {
+            btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
+        }
+
+        painelSuporte.text = "Temperatura: " + CleaningMachine.sensorAnalogico1.toString() + "\n\n"
+
+    }
+
 
 
     fun ajustaBalancas() {
@@ -263,6 +301,14 @@ class MainActivity : AppCompatActivity() {
 //                mPlayer!!.start()
 //            }
 //
+
+            if ( applicationContext.checkSelfPermission(android.Manifest.permission.CHANGE_CONFIGURATION ) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                Timber.e("----- NOK")
+            } else {
+                Timber.e("----- OK")
+
+            }
 
 
             contaMagica++
@@ -318,8 +364,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnStatusRequest.setOnClickListener {
-            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+        btnSimulaRequest.setOnClickListener {
+            ArduinoDevice.requestToSend(EventType.FW_LED, "9,0") // FW_LED
+        }
+
+        btn_modoSuporte.setOnClickListener {
+
+            if ( CleaningMachine.modoManutencaoHabilitado ) {
+                btn_modoSuporte.text = "Suporte\nON"
+                CleaningMachine.modoManutencaoHabilitado = false
+
+                painelSuporte.visibility = View.GONE
+                waiting_mode_painel_imagem.visibility = View.VISIBLE
+                waiting_mode_painel_video.visibility = View.VISIBLE
+
+            } else {
+                btn_modoSuporte.text = "Suporte\nOFF"
+                CleaningMachine.modoManutencaoHabilitado = true
+
+                painelSuporte.visibility = View.VISIBLE
+                waiting_mode_painel_imagem.visibility = View.GONE
+                waiting_mode_painel_video.visibility = View.GONE
+
+            }
         }
 
 
@@ -330,7 +397,7 @@ class MainActivity : AppCompatActivity() {
 // this goes wherever you setup your button listener:
 
         // this goes wherever you setup your button listener:
-        btn_sensor1.setOnTouchListener(OnTouchListener { v, event ->
+        btn_sensor1.setOnTouchListener(OnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 CleaningMachine.sensor1Status = 1
                 ajustaSensores(true, false)
@@ -343,7 +410,7 @@ class MainActivity : AppCompatActivity() {
             true
         })
 
-        btn_sensor2.setOnTouchListener(OnTouchListener { v, event ->
+        btn_sensor2.setOnTouchListener(OnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 CleaningMachine.sensor2Status = 1
                 ajustaSensores(true, false)
@@ -356,7 +423,7 @@ class MainActivity : AppCompatActivity() {
             true
         })
 
-        btn_sensor3.setOnTouchListener(OnTouchListener { v, event ->
+        btn_sensor3.setOnTouchListener(OnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 CleaningMachine.sensor3Status = 1
                 ajustaSensores(true, false)

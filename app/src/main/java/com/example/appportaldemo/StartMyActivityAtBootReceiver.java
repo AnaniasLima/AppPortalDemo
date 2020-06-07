@@ -16,8 +16,10 @@ public class StartMyActivityAtBootReceiver extends BroadcastReceiver {
 
         if ( Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             Log.i("StartMyActivityAtBootReceiver", "============> ACTION_BOOT_COMPLETED received");
+
             Intent i = new Intent(context, MainActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             Log.i("StartMyActivityAtBootReceiver", "============> Starting  MainActivity");
             context.startActivity(i);

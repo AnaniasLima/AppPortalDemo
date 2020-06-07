@@ -82,6 +82,8 @@ object CleaningMachine {
 
     private var runningDemo = false
 
+    var modoManutencaoHabilitado = false
+
     var questionDelayList = ArrayList<String>()
 
     var sensorAnalogico1 = 0F
@@ -103,11 +105,7 @@ object CleaningMachine {
 
     var valorFatura = 0
 
-    var gerarTemperaturaFake=0
-    var temperaturaFake = 0F
-
     var pessoaDentro = false
-
 
     var runFaseHandler: Handler = Handler()
     var runFaseRunnable: Runnable = Runnable {
@@ -198,7 +196,7 @@ object CleaningMachine {
             machineChecking(WAIT_TIME_TO_RESPONSE)
 
             mainActivity?.runOnUiThread {
-                (mainActivity as MainActivity).log_recycler_view.visibility = View.INVISIBLE
+                (mainActivity as MainActivity).log_recycler_view.visibility = View.GONE
             }
 
             WaitingModeThread.newLeaveWaitingMode()
@@ -217,17 +215,6 @@ object CleaningMachine {
         stateMachineRunning = false
     }
 
-//
-//    fun isRunningDemo(): Boolean {
-//        return (receivedState == CleaningMachineState.RUNNING_DEMO)
-//    }
-//
-//    fun stopRunDemo() {
-//        if (isRunningDemo()) {
-//            ArduinoDevice.requestToSend(EventType.FW_DEMO, Event.OFF)
-//        }
-//    }
-
 
     fun machineChecking(delay: Long) {
         var dropLog = false
@@ -239,16 +226,8 @@ object CleaningMachine {
                 delayToNext = WAIT_WHEN_OFFLINE
             } else {
                 if (delayToNext == 0L) {
-
                     delayToNext = SELECTED_TIME_TO_QUESTION
-
-//                    if ( (mainActivity as MainActivity).painel_inferior.isVisible == false) {
-//                        delayToNext = SELECTED_TIME_TO_QUESTION
-//                        dropLog = true
-//                    } else {
-//                        delayToNext = 5000
-//                        dropLog = true
-//                    }
+                    dropLog = true
                 }
             }
 
@@ -260,32 +239,11 @@ object CleaningMachine {
                     c.get(Calendar.MINUTE),
                     c.get(Calendar.SECOND)
                 )
-                Timber.i("agendando deviceChecking ${strHora} + ${delayToNext}ms")
+//                Timber.i("agendando deviceChecking ${strHora} + ${delayToNext}ms")
             }
 
             cleaningMachineHandler.removeCallbacks(machineCheckRunnable)
             cleaningMachineHandler.postDelayed(machineCheckRunnable, delayToNext)
-        }
-    }
-
-
-    fun machineDemoTimeout(start: Boolean) {
-
-        if ( start ) {
-            val c = Calendar.getInstance()
-            val strHora = String.format(
-                "%02d:%02d:%02d",
-                c.get(Calendar.HOUR_OF_DAY),
-                c.get(Calendar.MINUTE),
-                c.get(Calendar.SECOND)
-            )
-            Timber.i("agendando demoTimeout: ${strHora} + ${MAX_RUN_DEMO_TIMEOUT}ms")
-
-            cleaningMachineHandler.removeCallbacks(demoTimeoutResetMachine)
-            cleaningMachineHandler.postDelayed(demoTimeoutResetMachine, MAX_RUN_DEMO_TIMEOUT)
-        } else {
-            Timber.i("Removendo demoTimeout")
-            cleaningMachineHandler.removeCallbacks(demoTimeoutResetMachine)
         }
     }
 
@@ -437,8 +395,6 @@ object CleaningMachine {
         Timber.i("ZZ on_WAITING_PEOPLE ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-                gerarTemperaturaFake=0
-                temperaturaFake = 0F
                 desiredState = receivedState
                 initRunFaseTimer(0L)
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
@@ -465,12 +421,8 @@ object CleaningMachine {
             InOut.IN -> {
                 desiredState = receivedState
                 initRunFaseTimer(3500L )
-
-                val random = Random()
-                temperaturaFake= ((random.nextInt(15)) + 360) / 10F
                 temperaturaMedida = 0F
                 waitingThermometer = true
-
                 aguardando(MachineState.WAITING_THERMOMETER)
             }
 
@@ -484,11 +436,8 @@ object CleaningMachine {
                 if ( flag == InOut.OUT) {
                     cancelRunFaseTimer()
                 } else {
-                    var temperaturaMedida = sensorAnalogico1
+                    temperaturaMedida = sensorAnalogico1
 
-                    if ( temperaturaMedida == -1F ) {
-                        temperaturaMedida = temperaturaFake.toFloat()
-                    }
                     if ( temperaturaMedida < 37.3F) {
                         changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_OUT)
                     } else {
@@ -504,10 +453,9 @@ object CleaningMachine {
         Timber.i("ZZ on_ALCOHOL_PROCEDURE ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-                if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(timeout.toLong() )
-                buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_on)
+//                buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_on)
                 buttonAdjust(bma_mostra_temperatura, true, str=String.format("%.2f°", temperaturaMedida))
                 aguardando(MachineState.ALCOHOL_PROCEDURE, bma_mostra_temperatura)
             }
@@ -516,7 +464,7 @@ object CleaningMachine {
             InOut.TIMEOUT-> {
                 aguardando(MachineState.IDLE)
                 buttonAdjust((mainActivity as MainActivity).btn_show_full_screen, true)
-                buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_off)
+//                buttonAdjust((mainActivity as MainActivity).btn_alcohol_dispenser, true, background = R.drawable.alc_gel_off)
 
                 if (flag ==  InOut.TIMEOUT) {
                     changeCurrentState(MachineState.CALL_HELP, FROM_OUT)
@@ -529,7 +477,6 @@ object CleaningMachine {
         Timber.i("ZZ on_FEVER_PROCEDURE ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
-                if ( temperaturaMedida == 0F ) temperaturaMedida = temperaturaFake
                 desiredState = receivedState
                 initRunFaseTimer(5000L )
                 ligaIndicadorSaida(1)
@@ -618,7 +565,11 @@ object CleaningMachine {
         var nextState = receivedState
 
         if  ( receivedState == MachineState.ALCOHOL_PROCEDURE ) {
-            nextState = MachineState.WAITING_ENTER
+            if ( pessoaDentro ) {
+                nextState =  MachineState.CLEANING_PROCESS_1
+            } else {
+                nextState = MachineState.WAITING_ENTER
+            }
         } else if ( receivedState == MachineState.WAITING_ENTER ) {
             nextState =  MachineState.CLEANING_PROCESS_1
         } else if ( receivedState == MachineState.CLEANING_PROCESS_1 ) {
@@ -787,12 +738,15 @@ object CleaningMachine {
 
 
     fun onThermometerFinished(temperatura: Float) {
-        temperaturaMedida = temperatura
 
-        if ( temperatura <= 37F) {
-            changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_EXT)
-        } else {
-            changeCurrentState(MachineState.FEVER_PROCEDURE, FROM_EXT)
+        if ( waitingThermometer && (temperaturaMedida == -1F)) {
+            temperaturaMedida = temperatura
+            if ( temperatura <= 37F) {
+                changeCurrentState(MachineState.ALCOHOL_PROCEDURE, FROM_EXT)
+            } else {
+                changeCurrentState(MachineState.FEVER_PROCEDURE, FROM_EXT)
+            }
+
         }
     }
 
@@ -863,31 +817,37 @@ object CleaningMachine {
 
     private var machineCheckRunnable = Runnable {
 
-        machineChecking(0) // A principio agenda nova execução
-
-        if (receivedState == desiredState) {
-            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-        } else {
-            Timber.i("desiredState = ${desiredState} em 1111 (${MachineState.RESTART}")
-            when (desiredState) {
-                MachineState.RESTART -> {
-                    if (countCommandsToDesiredState++ == 0) {
-                        ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
+        if ( ! modoManutencaoHabilitado ) {
+            machineChecking(0) // A principio agenda nova execução
+            if (receivedState == desiredState) {
+                ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+            } else {
+                Timber.i("desiredState = ${desiredState} em 1111 (${MachineState.RESTART}")
+                when (desiredState) {
+                    MachineState.RESTART -> {
+                        if (countCommandsToDesiredState++ == 0) {
+                            ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
+                            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+                        }
+                    }
+                    MachineState.WAITING_PEOPLE,
+                    MachineState.WAITING_THERMOMETER,
+                    MachineState.CALL_HELP,
+                    MachineState.FEVER_PROCEDURE,
+                    MachineState.ALCOHOL_PROCEDURE,
+                    MachineState.WAITING_ENTER,
+                    MachineState.GRANA_BOLSO -> {
+                        ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+                    }
+                    else -> {
+                        println("ATENÇÃO: CCC Situação nao deveria ocorrer. Preciso reavaliara") // TODO: Verificar se vai ocorrer
                     }
                 }
-                MachineState.WAITING_PEOPLE,
-                MachineState.WAITING_THERMOMETER,
-                MachineState.CALL_HELP,
-                MachineState.FEVER_PROCEDURE,
-                MachineState.ALCOHOL_PROCEDURE,
-                MachineState.WAITING_ENTER,
-                MachineState.GRANA_BOLSO -> {
-                    ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-                }
-                else -> {
-                    println("ATENÇÃO: CCC Situação nao deveria ocorrer. Preciso reavaliara") // TODO: Verificar se vai ocorrer
-                }
             }
+
+        } else {
+            machineChecking(0) // A principio agenda nova execução
+            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         }
     }
 
@@ -903,10 +863,13 @@ object CleaningMachine {
 
         when (response.eventType) {
 
-            EventType.FW_DUMMY -> {
+            EventType.FW_CONFIG -> {
                 // Não faz nada
             }
 
+            EventType.FW_DUMMY -> {
+                // Não faz nada
+            }
             EventType.FW_RESTART -> {
                 changeCurrentState(MachineState.RESTART, FROM_EXT)
                 ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
@@ -920,6 +883,28 @@ object CleaningMachine {
                         erroFatal("Equipamento com problema FW_RESTART = ERRO")
                     }
                 } else {
+
+                    if ( modoManutencaoHabilitado ) {
+                        sensorAnalogico1 = response.f1 / 10F
+                        sensorAnalogico2 = response.f2 / 10F
+
+                        sensor1Status = response.s1
+                        sensor2Status = response.s2
+                        sensor3Status = response.s3
+                        sensor4Status = response.s4
+
+
+                        balanca1Status = response.b1
+                        balanca2Status = response.b2
+                        balanca3Status = response.b3
+
+                        mainActivity?.runOnUiThread {
+                            (mainActivity as MainActivity).mostraSensores()
+                        }
+                        return
+                    }
+
+
                     if ( (sensor1Status != response.s1) || (sensor2Status != response.s2) || (sensor3Status != response.s3) || (sensor4Status != response.s4)) {
                         mainActivity?.runOnUiThread {
                             (mainActivity as MainActivity).ajustaSensores(false, false)
@@ -932,17 +917,8 @@ object CleaningMachine {
                         }
                     }
 
-                    if ( sensor4Status != response.s4) {
-                        Timber.e("WWW 004 processReceivedResponse vai fazer CleaningMachine.sensor4Status = ${response.s4}")
-                    }
-
-                    if ( response.f1 < 0 ) {
-                        // gerar temperatura fake
-                        gerarTemperaturaFake=1
-                    }
-
-                    sensorAnalogico1 = response.f1
-                    sensorAnalogico2 = response.f2
+                    sensorAnalogico1 = response.f1 / 10F
+                    sensorAnalogico2 = response.f2 / 10F
 
                     sensor1Status = response.s1
                     sensor2Status = response.s2
@@ -954,10 +930,8 @@ object CleaningMachine {
                     balanca2Status = response.b2
                     balanca3Status = response.b3
 
-                    Timber.e("estado de receivedState = ${receivedState} em processReceivedResponse")
 
                     when (receivedState) {
-
 
                         MachineState.IDLE-> {
                             Timber.e("Não deveria chegar em processReceivedResponse com MachineState.IDLE")
@@ -980,6 +954,7 @@ object CleaningMachine {
                         }
 
                         MachineState.WAITING_THERMOMETER -> {
+                            Timber.e("RX temp sensorAnalogico1=${sensorAnalogico1} ")
                             if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
                                 changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                             }
@@ -1013,9 +988,9 @@ object CleaningMachine {
                                     if ( Config.gerenciaEntradaESaida == 0) {
                                         changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
                                     } else {
+                                        pessoaDentro = true
                                         nextState = nextCleaningProcess()
                                         changeCurrentState(nextState, FROM_EXT)
-                                        pessoaDentro = true
                                     }
                                 }
                             }

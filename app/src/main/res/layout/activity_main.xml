@@ -30,6 +30,19 @@
             android:layout_height="match_parent"
             android:visibility="gone"/>
 
+        <TextView android:id="@+id/painelSuporte"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:text="35°"
+            android:textColor="@color/blue"
+            android:background="@color/fundo"
+            android:textSize="30sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:visibility="gone"/>
+
+
         <androidx.constraintlayout.widget.Guideline android:id="@+id/gl_30_superior"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -129,7 +142,7 @@
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:background="@color/fundo"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/painel_suporte">
 
         <Button android:id="@+id/btn_sensor1"
@@ -259,7 +272,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="@color/black"
-        android:visibility="gone"
+        android:visibility="visible"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -294,7 +307,7 @@
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
             android:text="@string/clear" />
 
-        <Button android:id="@+id/btnStatusRequest"
+        <Button android:id="@+id/btnSimulaRequest"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:visibility="visible"
@@ -302,7 +315,18 @@
             android:layout_weight="1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
-            android:text="@string/statusRequest" />
+            android:text="@string/simulaRequest" />
+
+        <Button android:id="@+id/btn_modoSuporte"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:layout_gravity="left"
+            android:layout_weight="1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
+            android:text="@string/modoSuporte" />
+
         <Button android:id="@+id/btnHidePainel"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

@@ -18,23 +18,29 @@ enum class ConfigType(val type: Int, val token: String) {
     RESERVATORIO_2        (7, "RESERVATORIO_2"),
     RESERVATORIO_3        (8, "RESERVATORIO_3"),
 
-    ALARME_FEBRE          (9, "ALARME_FEBRE"),
+    SENSOR1_VALUE         ( 9, "SENSOR1_VALUE"),
+    SENSOR2_VALUE         (10, "SENSOR2_VALUE"),
+    SENSOR3_VALUE         (11, "SENSOR3_VALUE"),
+    SENSOR4_VALUE         (12, "SENSOR4_VALUE"),
 
-    IDLE                 (10, "IDLE"),
-    UNKNOWN              (11, "UNKNOWN"),
-    RESTART              (12, "RESTART"),
-    WAITING_PEOPLE       (13, "WAITING_PEOPLE"),
-    WAITING_THERMOMETER  (14, "WAITING_THERMOMETER"),
-    CALL_HELP            (15, "CALL_HELP"),
-    FEVER_PROCEDURE      (16, "FEVER_PROCEDURE"),
-    ALCOHOL_PROCEDURE    (17, "ALCOHOL_PROCEDURE"),
-    WAITING_ENTER        (18, "WAITING_ENTER"),
-    CLEANING_PROCESS_1   (19, "CLEANING_PROCESS_1"),
-    CLEANING_PROCESS_2   (20, "CLEANING_PROCESS_2"),
-    CLEANING_PROCESS_3   (21, "CLEANING_PROCESS_3"),
-    WAITING_FINISH       (22, "WAITING_FINISH"),
-    GRANA_BOLSO          (23, "GRANA_BOLSO"),
-    MEDIAS_TEST          (30, "MEDIAS_TEST");
+    ALARME_FEBRE          (13, "ALARME_FEBRE"),
+
+    IDLE                 (20, "IDLE"),
+    UNKNOWN              (21, "UNKNOWN"),
+    RESTART              (22, "RESTART"),
+    WAITING_PEOPLE       (23, "WAITING_PEOPLE"),
+    WAITING_THERMOMETER  (24, "WAITING_THERMOMETER"),
+    CALL_HELP            (25, "CALL_HELP"),
+    FEVER_PROCEDURE      (26, "FEVER_PROCEDURE"),
+    ALCOHOL_PROCEDURE    (27, "ALCOHOL_PROCEDURE"),
+    WAITING_ENTER        (28, "WAITING_ENTER"),
+    CLEANING_PROCESS_1   (29, "CLEANING_PROCESS_1"),
+    CLEANING_PROCESS_2   (30, "CLEANING_PROCESS_2"),
+    CLEANING_PROCESS_3   (31, "CLEANING_PROCESS_3"),
+    WAITING_FINISH       (32, "WAITING_FINISH"),
+    GRANA_BOLSO          (33, "GRANA_BOLSO"),
+
+    MEDIAS_TEST          (40, "MEDIAS_TEST");
 }
 
 
@@ -68,6 +74,13 @@ object Config {
     var capacidadeReservatorio1: Int = 0
     var capacidadeReservatorio2: Int = 0
     var capacidadeReservatorio3: Int = 0
+
+
+    var sensor1DistanciaDetecta: Int = 0
+    var sensor2DistanciaDetecta: Int = 0
+    var sensor3DistanciaDetecta: Int = 0
+    var sensor4DistanciaDetecta: Int = 0
+
 
     var alarmeFebre : Int = 0
 
@@ -141,6 +154,12 @@ object Config {
                     ConfigType.RESERVATORIO_2           -> capacidadeReservatorio2    = jsonObject.getInt(value.token)
                     ConfigType.RESERVATORIO_3           -> capacidadeReservatorio3    = jsonObject.getInt(value.token)
 
+                    ConfigType.SENSOR1_VALUE           -> sensor1DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR2_VALUE           -> sensor2DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
+                    ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta = jsonObject.getInt(value.token)
+
+
                     ConfigType.ALARME_FEBRE             -> alarmeFebre                = jsonObject.getInt(value.token)
 
                     ConfigType.IDLE                    -> idleMedias                 = getMedias(jsonObject.getJSONArray(value.token))
@@ -180,6 +199,12 @@ object Config {
                 ConfigType.RESERVATORIO_1          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio1)
                 ConfigType.RESERVATORIO_2          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio2)
                 ConfigType.RESERVATORIO_3          -> Timber.i("%-20s = %d", value.token, capacidadeReservatorio3)
+
+                ConfigType.SENSOR1_VALUE          -> Timber.i("%-20s = %d", value.token, sensor1DistanciaDetecta)
+                ConfigType.SENSOR2_VALUE          -> Timber.i("%-20s = %d", value.token, sensor2DistanciaDetecta)
+                ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
+                ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
+
 
                 ConfigType.ALARME_FEBRE            -> Timber.i("%-20s = %s", value.token, alarmeFebre)
 

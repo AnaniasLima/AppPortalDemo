@@ -52,8 +52,8 @@ data class EventResponse(
     var action: String = "",
     var value: Int = 0,
     var error_n: Int = 0,
-    var f1: Float = 0F,
-    var f2: Float = 0F,
+    var f1: Int = 0,
+    var f2: Int = 0,
     var s1: Int = 0,
     var s2: Int = 0,
     var s3: Int = 0,
@@ -98,6 +98,7 @@ enum class EventType(val type: Int, val command: String) {
     FW_CALIBRATE(5, "fw_calibrate"),
     FW_SENSOR1( 10, "fw_sensor1"),
     FW_ALARM( 11, "fw_alarm"),
+    FW_CONFIG( 11, "fw_config"),
     FW_DUMMY(998, "fw_dummy"),
 
     FW_NACK(999, "fw_nack");
