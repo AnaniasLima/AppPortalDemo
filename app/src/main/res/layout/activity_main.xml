@@ -142,7 +142,7 @@
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:background="@color/fundo"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/painel_suporte">
 
         <Button android:id="@+id/btn_sensor1"
@@ -272,7 +272,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="@color/black"
-        android:visibility="visible"
+        android:visibility="gone"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent">
 

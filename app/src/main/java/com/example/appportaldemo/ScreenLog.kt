@@ -137,7 +137,6 @@ object  ScreenLog {
         val linesToMove = linesToLog.size
 
         if ( linesToMove > 0 ) {
-            Timber.i("Movendo ${linesToMove}")
             // Copy lines from localList to mainList
             for (line in 0 until linesToMove ) {
                 if (logMainList.size >= MAX_LOG_LINES) {
@@ -156,7 +155,6 @@ object  ScreenLog {
         val linesToMove = linesToHistory.size
 
         if ( linesToMove > 0) {
-            Timber.i("Movendo ${linesToMove}")
             // Copy lines from localList to mainList
             for (line in 0 until linesToMove ) {
                 if (historyMainList.size >= MAX_LOG_LINES) {

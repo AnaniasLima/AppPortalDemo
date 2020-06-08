@@ -24,6 +24,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
     var receivedBytes = ByteArray(512)
     var pktInd:Int=0
     var pendingResponse = 0
+    var forcaDelay = 0
 
     companion object {
         var CONNECT = 1
@@ -33,13 +34,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         val WAITTIME : Long = 50L
         var isConnected: Boolean  = false
     }
-
-    // Para descartar primeiros pacotes da conexao
-    var communicationModeDummy = false
-    fun discardCommunicationData(dummyMode: Boolean) {
-        communicationModeDummy = dummyMode
-    }
-
 
 
     private fun mostraNaTela(str:String) {
@@ -57,12 +51,12 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
      * @return true if the Event was created and able to be sent
      */
     fun requestToSend(eventType: EventType, action: String) : Boolean {
+
+//        Timber.i(" requestToSend ${EventType} action:${action}: listSize=${EVENT_LIST.size}")
+
         if ( isConnected && (!finishThread )) {
             val event = Event(eventType = eventType, action = action)
             EVENT_LIST.add(event)
-            if ( EVENT_LIST.size > 1) {
-                Timber.i("Eventos na lista ${action}: ${EVENT_LIST.size}")
-            }
             return true
         }
         return false
@@ -90,11 +84,16 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                 pktInd = 0
             }
             if ( ch.toInt() in 32..126 ) {
-                if ( pktInd < (receivedBytes.size - 1) ) {
+                if (pktInd < (receivedBytes.size - 1)) {
                     receivedBytes[pktInd++] = ch
                     receivedBytes[pktInd] = 0
-                    if ( ch.toChar() == '}') {
-                        onCommandReceived(String(receivedBytes,0,pktInd))
+                    if (ch.toChar() == '}') {
+
+                        if ( receivedBytes[1].toChar() == '@' ) {
+                            Timber.e("ARDUINO ==> ${String(receivedBytes, 0, pktInd)}")
+                        } else {
+                            onCommandReceived(String(receivedBytes, 0, pktInd))
+                        }
                         pktInd = 0
                     }
                 } else {
@@ -108,10 +107,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
     fun onCommandReceived(commandReceived: String) {
 
-        if ( communicationModeDummy ) {
-            return
-        }
-
         pendingResponse = 0
 
         if ( ArduinoDevice.getLogLevel(FunctionType.FX_RX)   ) {
@@ -124,7 +119,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
         }
 
-//        println("@@@ RX ==> ${commandReceived}")
         try {
             val eventResponse = Gson().fromJson(commandReceived, EventResponse::class.java)
             EventType.getByCommand(eventResponse.cmd)?.let {
@@ -169,17 +163,28 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 //            WaitingMode.enterWaitingMode(VideoFase.HELP)
 //        }
 
+
         if ( operation ==  CONNECT) {
             if ( connectInBackground() ) {
                 finishThread = false
                 pendingResponse = 0
 
-                sleep(500)
+                forcaDelay = 3
+
                 ArduinoDevice.requestToSend(EventType.FW_CONFIG, String.format("S,%03d,%03d,%03d,%03d",
                     Config.sensor1DistanciaDetecta,
                     Config.sensor2DistanciaDetecta,
                     Config.sensor3DistanciaDetecta,
                     Config.sensor4DistanciaDetecta))
+
+
+                ArduinoDevice.requestToSend(EventType.FW_CONFIG, String.format("B,%04d,%04d,%04d,%04d",
+                    Config.tempoBomba1,
+                    Config.tempoBomba2,
+                    Config.tempoBomba3,
+                    Config.tempoBomba4))
+
+                ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
 
 
                 while ( ! finishThread ) {
@@ -222,6 +227,9 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
     private var lastEventTimestamp: Long = 0L
 
     private fun send( curEvent: Event) {
+
+//        Timber.i("Send ${curEvent.eventType} action:${curEvent.action}: listSize=${EVENT_LIST.size}")
+
         try {
             if ( (curEvent.eventType == lastEventType) && (curEvent.action == lastEventAction) ) {
                 if ( (curEvent.timestamp - lastEventTimestamp) < DROP_SAME_COMMAND_TIME_INTERVAL )  {
@@ -241,11 +249,23 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             // TODO: Colocar wack e parar medição ultrason durante pacote
 
             val startBytes =  byteArrayOf( 2, 2, 2) // STX
+            val endBytes =  byteArrayOf( 3, 3, 3) // ETX
+
+            // Pacotes não chegavam no Arduino direito
+            if ( forcaDelay > 0) {
+                Timber.e("Aguardado delay do pacote ${forcaDelay}")
+                forcaDelay--
+                sleep(1000)
+            }
+
 
             usbSerialDevice?.write(startBytes)
             usbSerialDevice?.write(pktStr.toByteArray())
+            usbSerialDevice?.write(endBytes)
 
-            if ( ! communicationModeDummy ) {
+
+//            if ( ! communicationModeDummy ) {
+
                 if ( ArduinoDevice.getLogLevel(FunctionType.FX_TX)  ) {
                     ScreenLog.add(LogType.TO_LOG, "TX: ${pktStr}")
                 } else {
@@ -254,7 +274,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                         Timber.d("TX: $pktStr")
                     }
                 }
-            }
+//            }
         } catch (e: Exception) {
             Timber.d("Exception in send: ${e.message} ")
         }
@@ -325,7 +345,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
         if ( isConnected ) {
             ScreenLog.add(LogType.TO_LOG,"CONECTADO COM SUCESSO")
-            ArduinoDevice.usbSerialImediateChecking(300)
+//            ArduinoDevice.usbSerialImediateChecking(300)
         }
 
         return isConnected

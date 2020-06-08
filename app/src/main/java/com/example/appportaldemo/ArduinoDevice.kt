@@ -86,11 +86,11 @@ object ArduinoDevice {
 
 
         if ( ! ConnectThread.isConnected ) {
-            val c = Calendar.getInstance()
-            val strHora =  String.format("%02d:%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))
+//            val c = Calendar.getInstance()
+//            val strHora =  String.format("%02d:%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))
+//            mostraNaTela("agendando proximo STATUS_REQUEST para:---" + strHora + " ${delayToNext}ms")
 
             delayToNext = USB_SERIAL_TIME_TO_CONNECT_INTERVAL
-            mostraNaTela("agendando proximo STATUS_REQUEST para:---" + strHora + " ${delayToNext}ms")
         }
 
         usbSerialRequestHandler.removeCallbacks(usbSerialRunnable)
@@ -132,9 +132,6 @@ object ArduinoDevice {
             }
             EventType.FW_CONFIG -> {
                 Timber.e("FW_CONFIG =====> ${eventResponse.toString()}")
-            }
-            EventType.FW_DUMMY -> {
-                Timber.e("FW_DUMMY =====> ${eventResponse.toString()}")
             }
             EventType.FW_DEMO,
             EventType.FW_RESTART,
@@ -201,24 +198,15 @@ object ArduinoDevice {
 
         if ( usbManager != null ) {
             if ( usbManager!!.deviceList.size > 0  ) {
-                mostraNaTela("Tentando connect...")
+                mostraNaTela("Criando ConnectThread...")
                 connectThread = ConnectThread(ConnectThread.CONNECT, usbManager!!, mainActivity!!, appContext!!)
                 if (connectThread != null ) {
-                    Timber.i("Startando thread para tratar da conexao")
+                    Timber.i("ConnectThread criada com sucesso.")
                     connectThread!!.priority = Thread.MAX_PRIORITY
 
                     connectThread!!.start()
 
-                    // Vamos mandar pacotes para "esquentar" a conexao
-                    connectThread!!.discardCommunicationData(true)
-                    ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-                    ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-                    ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-                    Thread.sleep(500)
-                    connectThread!!.discardCommunicationData(false)
-                    Thread.sleep(500)
-
-                    ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
+                    Thread.sleep(5000) // para esperar a reconfiguração do arduino
 
                     if ( ! CleaningMachine.isStateMachineRunning() ) {
                         if ( CleaningMachine.startStateMachine() ) {
@@ -279,9 +267,6 @@ object ArduinoDevice {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_ALARM -> {
-                        ret = connectThread!!.requestToSend(eventType, action=action)
-                    }
-                    EventType.FW_DUMMY -> {
                         ret = connectThread!!.requestToSend(eventType, action=action)
                     }
                     EventType.FW_CONFIG -> {

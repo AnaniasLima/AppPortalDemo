@@ -23,7 +23,12 @@ enum class ConfigType(val type: Int, val token: String) {
     SENSOR3_VALUE         (11, "SENSOR3_VALUE"),
     SENSOR4_VALUE         (12, "SENSOR4_VALUE"),
 
-    ALARME_FEBRE          (13, "ALARME_FEBRE"),
+    TEMPO_BOMBA_1         (13, "TEMPO_BOMBA_1"),
+    TEMPO_BOMBA_2         (14, "TEMPO_BOMBA_2"),
+    TEMPO_BOMBA_3         (15, "TEMPO_BOMBA_3"),
+    TEMPO_BOMBA_4         (16, "TEMPO_BOMBA_4"),
+
+    ALARME_FEBRE          (17, "ALARME_FEBRE"),
 
     IDLE                 (20, "IDLE"),
     UNKNOWN              (21, "UNKNOWN"),
@@ -81,11 +86,16 @@ object Config {
     var sensor3DistanciaDetecta: Int = 0
     var sensor4DistanciaDetecta: Int = 0
 
+    var tempoBomba1 = 0
+    var tempoBomba2 = 0
+    var tempoBomba3 = 0
+    var tempoBomba4 = 0
+
+
 
     var alarmeFebre : Int = 0
 
     init {
-        Timber.e("===== =====  ==== Init 2222")
         printConfig()
     }
 
@@ -159,6 +169,10 @@ object Config {
                     ConfigType.SENSOR3_VALUE           -> sensor3DistanciaDetecta = jsonObject.getInt(value.token)
                     ConfigType.SENSOR4_VALUE           -> sensor4DistanciaDetecta = jsonObject.getInt(value.token)
 
+                    ConfigType.TEMPO_BOMBA_1           -> tempoBomba1 = jsonObject.getInt(value.token)
+                    ConfigType.TEMPO_BOMBA_2           -> tempoBomba2 = jsonObject.getInt(value.token)
+                    ConfigType.TEMPO_BOMBA_3           -> tempoBomba3 = jsonObject.getInt(value.token)
+                    ConfigType.TEMPO_BOMBA_4           -> tempoBomba4 = jsonObject.getInt(value.token)
 
                     ConfigType.ALARME_FEBRE             -> alarmeFebre                = jsonObject.getInt(value.token)
 
@@ -205,6 +219,10 @@ object Config {
                 ConfigType.SENSOR3_VALUE          -> Timber.i("%-20s = %d", value.token, sensor3DistanciaDetecta)
                 ConfigType.SENSOR4_VALUE          -> Timber.i("%-20s = %d", value.token, sensor4DistanciaDetecta)
 
+                ConfigType.TEMPO_BOMBA_1          -> Timber.i("%-20s = %d", value.token, tempoBomba1)
+                ConfigType.TEMPO_BOMBA_2          -> Timber.i("%-20s = %d", value.token, tempoBomba2)
+                ConfigType.TEMPO_BOMBA_3          -> Timber.i("%-20s = %d", value.token, tempoBomba3)
+                ConfigType.TEMPO_BOMBA_4          -> Timber.i("%-20s = %d", value.token, tempoBomba4)
 
                 ConfigType.ALARME_FEBRE            -> Timber.i("%-20s = %s", value.token, alarmeFebre)
 
@@ -364,8 +382,6 @@ data class Media(var filename: String="") {
         val ind = filename.indexOfFirst { c -> (c == '.') }
         if ( ind > 0 ) {
             var fileExtension = filename.removeRange(0, ind+1)
-            Timber.i(" ind: ${ind} ${fileExtension}")
-
             when (fileExtension) {
                 "mp4" -> {
                     type = Media.VIDEO
@@ -382,10 +398,6 @@ data class Media(var filename: String="") {
                 else -> {
                     type = Media.UNKNOW
                 }
-            }
-
-            if (type == Media.IMAGE ) {
-                Timber.i("Imagem")
             }
         }
 
@@ -408,8 +420,6 @@ data class Media(var filename: String="") {
     }
 
     constructor (path: File?, file:String, volume:Int, duracao:Int) : this (file, volume, duracao) {
-
-
         parent = path
     }
 
@@ -419,13 +429,9 @@ data class Media(var filename: String="") {
         if ( Config.path == null )  {
             val ind = filename.indexOfFirst { c -> (c == '.') }
             if ( ind > 0 ) {
-                Timber.i(" ind: ${ind} ${filename.removeRange(ind, filename.length)}")
                 file = filename.removeRange(ind, filename.length)
-                Timber.i(" name: ${file}")
             }
         }
         return(file)
     }
-
-
 }

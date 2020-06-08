@@ -1,5 +1,7 @@
 package com.example.appportaldemo
 
+import android.app.Activity
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -119,10 +121,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-
+        requestedOrientation
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+
 //        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
 
         super.onCreate(savedInstanceState)
@@ -152,9 +156,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun xxx() {
-
-
-        ajustaSensores(false, false)
+        ajustaSensores()
 
         btn_led.setBackgroundResource(R.drawable.led_white)
         btn_cleaning_area.setBackgroundResource(R.drawable.cleaning_area_off)
@@ -200,16 +202,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun ajustaSensores(sendToArduino:Boolean, simulaSensor4:Boolean) {
-
-        // Todos os sensores vao desativar o sensor4
-        var s4 = CleaningMachine.sensor4Status
-
-
+    fun ajustaSensores() {
 
         btn_sensor1.setBackgroundResource(R.drawable.sensor_sem_gente)
         btn_sensor2.setBackgroundResource(R.drawable.sensor_sem_gente)
         btn_sensor3.setBackgroundResource(R.drawable.sensor_sem_gente)
+        btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
 
         if ( CleaningMachine.pessoaEmSensor(Sensor.PRESENCA) ) {
             btn_sensor1.setBackgroundResource(R.drawable.sensor_com_gente)
@@ -223,20 +221,6 @@ class MainActivity : AppCompatActivity() {
 
         if ( CleaningMachine.sensor4Status > 0 ) {
             btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_on)
-        } else {
-            btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
-        }
-
-
-
-        // So manda se for alterado pela interface
-        if ( sendToArduino) {
-            if ( simulaSensor4 ) {
-//                s4 = 1
-            }
-            ArduinoDevice.requestToSend(EventType.FW_DUMMY, String.format("S,%d,%d,%d,%d",
-                CleaningMachine.sensor1Status, CleaningMachine.sensor2Status, CleaningMachine.sensor3Status, s4))
-            ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
         }
     }
 
@@ -394,100 +378,7 @@ class MainActivity : AppCompatActivity() {
         // Rodape -----------------------------------
         // --------------------------------------------------
 
-// this goes wherever you setup your button listener:
 
-        // this goes wherever you setup your button listener:
-        btn_sensor1.setOnTouchListener(OnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                CleaningMachine.sensor1Status = 1
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor1 para LIGADO")
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                CleaningMachine.sensor1Status = 0
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor1 para DESLIGADO")
-            }
-            true
-        })
-
-        btn_sensor2.setOnTouchListener(OnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                CleaningMachine.sensor2Status = 1
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor2 para LIGADO")
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                CleaningMachine.sensor2Status = 0
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor2 para DESLIGADO")
-            }
-            true
-        })
-
-        btn_sensor3.setOnTouchListener(OnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                CleaningMachine.sensor3Status = 1
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor3 para LIGADO")
-            } else if (event.action == MotionEvent.ACTION_UP) {
-                CleaningMachine.sensor3Status = 0
-                ajustaSensores(true, false)
-                Timber.i("mudou btn_sensor3 para DESLIGADO")
-            }
-            true
-        })
-
-//        btn_sensor1.setOnClickListener  {
-//            Timber.i("btn_sensor1 ${CleaningMachine.sensor1Status}")
-//            if ( CleaningMachine.sensor1Status > 0 ) {
-//                CleaningMachine.sensor1Status = 0
-//            } else {
-//                CleaningMachine.sensor1Status = 1
-//                CleaningMachine.sensor2Status = 0
-//                CleaningMachine.sensor3Status = 0
-//            }
-//            ajustaSensores(true, false)
-//        }
-//
-//        btn_sensor2.setOnClickListener  {
-//            Timber.i("btn_sensor2 ${CleaningMachine.sensor2Status}")
-//            if ( CleaningMachine.sensor2Status > 0 ) {
-//                CleaningMachine.sensor2Status = 0
-//            } else {
-//                CleaningMachine.sensor1Status = 0
-//                CleaningMachine.sensor2Status = 1
-//                CleaningMachine.sensor3Status = 1
-//            }
-//            ajustaSensores(true, false)
-//        }
-//
-//        btn_sensor3.setOnClickListener  {
-//            Timber.i("btn_sensor3 ${CleaningMachine.sensor3Status}")
-//            if ( CleaningMachine.sensor3Status > 0 ) {
-//                CleaningMachine.sensor3Status = 0
-//            } else {
-//                CleaningMachine.sensor1Status = 0
-//                CleaningMachine.sensor2Status = 0
-//                CleaningMachine.sensor3Status = 1
-//            }
-//            ajustaSensores(true, false)
-//        }
-
-
-        btn_money.setOnClickListener  {
-            Timber.i("btn_money ${CleaningMachine.sensor2Status}")
-            if ( (CleaningMachine.sensor2Status > 0 )  ||  (CleaningMachine.sensor3Status > 0) ) {
-                CleaningMachine.sensor1Status = 0
-                CleaningMachine.sensor2Status = 0
-                CleaningMachine.sensor3Status = 0
-            }
-            ajustaSensores(true, false)
-        }
-
-
-        btn_alcohol_dispenser.setOnClickListener  {
-            Timber.i("btn_alcohol_dispenser ")
-            ajustaSensores(true, true)
-        }
 
     }
 

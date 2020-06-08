@@ -57,7 +57,7 @@ object CleaningMachine {
     private const val WAIT_WHEN_OFFLINE = 5000L
     private var DEFAULT_TIME_TO_QUESTION = 250L
     private var SELECTED_TIME_TO_QUESTION = DEFAULT_TIME_TO_QUESTION
-    private const val WAIT_TIME_TO_RESPONSE = 300L
+    private const val WAIT_TIME_TO_RESPONSE = 400L
     private const val MAX_RUN_DEMO_TIMEOUT = 30000L
     private const val FROM_OUT = true
     private const val FROM_EXT = false
@@ -825,7 +825,7 @@ object CleaningMachine {
                 Timber.i("desiredState = ${desiredState} em 1111 (${MachineState.RESTART}")
                 when (desiredState) {
                     MachineState.RESTART -> {
-                        if (countCommandsToDesiredState++ == 0) {
+                        if ( (countCommandsToDesiredState++ % 10) == 0) {
                             ArduinoDevice.requestToSend(EventType.FW_RESTART, Event.RESET)
                             ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
                         }
@@ -867,9 +867,6 @@ object CleaningMachine {
                 // Não faz nada
             }
 
-            EventType.FW_DUMMY -> {
-                // Não faz nada
-            }
             EventType.FW_RESTART -> {
                 changeCurrentState(MachineState.RESTART, FROM_EXT)
                 ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
@@ -904,18 +901,11 @@ object CleaningMachine {
                         return
                     }
 
-
-                    if ( (sensor1Status != response.s1) || (sensor2Status != response.s2) || (sensor3Status != response.s3) || (sensor4Status != response.s4)) {
-                        mainActivity?.runOnUiThread {
-                            (mainActivity as MainActivity).ajustaSensores(false, false)
-                        }
+                    mainActivity?.runOnUiThread {
+                        (mainActivity as MainActivity).ajustaSensores()
+                        (mainActivity as MainActivity).ajustaBalancas()
                     }
 
-                    if ( (balanca1Status != response.b1) || (balanca2Status != response.b2) || (balanca3Status != response.b3)) {
-                        mainActivity?.runOnUiThread {
-                            (mainActivity as MainActivity).ajustaBalancas()
-                        }
-                    }
 
                     sensorAnalogico1 = response.f1 / 10F
                     sensorAnalogico2 = response.f2 / 10F
