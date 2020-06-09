@@ -11,10 +11,10 @@
 	"SENSOR3_VALUE": 10,
 	"SENSOR4_VALUE": 10,
 
-	"TEMPO_BOMBA_1" : 3000,
-	"TEMPO_BOMBA_2" : 0,
+	"TEMPO_BOMBA_1" : 2000,
+	"TEMPO_BOMBA_2" : 2000,
 	"TEMPO_BOMBA_3" : 0,
-	"TEMPO_BOMBA_4" : 0,
+	"TEMPO_BOMBA_4" : 500,
 
 	"ALARME_FEBRE" : "0",
 
@@ -73,7 +73,7 @@
 		{ "volume": 99, "filename": "saida_liberada.png"}
 	],
 
-	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "bom_trabalho.png" } ],
+	"GRANA_BOLSO"      : [ { "volume": 99, "filename": "bom_trabalho.png", "duracao" : 3000  }],
 
 	"MEDIAS_TEST"          : [
 		{ "volume": 99, "filename": "apresentacao.mp3" },

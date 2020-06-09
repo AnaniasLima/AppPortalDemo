@@ -55,7 +55,7 @@ enum class Sensor  {
 @SuppressLint("StaticFieldLeak")
 object CleaningMachine {
     private const val WAIT_WHEN_OFFLINE = 5000L
-    private var DEFAULT_TIME_TO_QUESTION = 250L
+    private var DEFAULT_TIME_TO_QUESTION = 500L
     private var SELECTED_TIME_TO_QUESTION = DEFAULT_TIME_TO_QUESTION
     private const val WAIT_TIME_TO_RESPONSE = 400L
     private const val MAX_RUN_DEMO_TIMEOUT = 30000L
@@ -271,7 +271,7 @@ object CleaningMachine {
         if (  balanca3Status > 0 ) {
             valorFatura += 4
             ScreenLog.add(LogType.TO_HISTORY, "Ejetou produto 3")
-            ArduinoDevice.requestToSend(EventType.FW_EJECT, "2,1")
+            ArduinoDevice.requestToSend(EventType.FW_EJECT, "3,1")
         } else {
             ScreenLog.add(LogType.TO_HISTORY, "SEM produto 3")
         }
@@ -396,6 +396,8 @@ object CleaningMachine {
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
+                pessoaDentro = false
+
                 initRunFaseTimer(0L)
                 ArduinoDevice.requestToSend(EventType.FW_SENSOR1, Event.ON)
 
@@ -692,7 +694,7 @@ object CleaningMachine {
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
-                initRunFaseTimer(1000L )
+                initRunFaseTimer(2000L )
                 aguardando(MachineState.GRANA_BOLSO)
                 buttonAdjust((mainActivity as MainActivity).btn_money, true, background = R.drawable.dindin)
             }

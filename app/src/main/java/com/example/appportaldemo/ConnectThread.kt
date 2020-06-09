@@ -35,6 +35,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         var isConnected: Boolean  = false
     }
 
+    fun init() {
+        println("Criando Thread ConnectThread")
+        Timber.e("Criando Thread ConnectThread")
+    }
 
     private fun mostraNaTela(str:String) {
         ScreenLog.add(LogType.TO_LOG, str)
@@ -316,9 +320,12 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
                 ScreenLog.add(LogType.TO_LOG,"hasPermission = " + usbManager.hasPermission(m_device).toString())
                 ScreenLog.add(LogType.TO_LOG,"deviceClass = " + m_device.deviceClass.toString())
+                ScreenLog.add(LogType.TO_LOG,"subclass = " + m_device.deviceSubclass.toString())
+                ScreenLog.add(LogType.TO_LOG,"protocol = " + m_device.deviceProtocol.toString())
                 ScreenLog.add(LogType.TO_LOG,"deviceName = " + m_device.deviceName)
                 ScreenLog.add(LogType.TO_LOG,"vendorId = " + m_device.vendorId.toString())
                 ScreenLog.add(LogType.TO_LOG,"productId = " + m_device.productId.toString())
+
                 if (m_connection != null) {
                     Timber.i("Creating usbSerialDevice")
                     usbSerialDevice = UsbSerialDevice.createUsbSerialDevice(m_device, m_connection)
