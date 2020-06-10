@@ -18,9 +18,6 @@
 #define PINO_LEITOR_ULTRASON_2_ECHO 	40 // 39 // Alcool Gel
 
 
-
-
-
 //------ Bomba de alcool -----------------------------
 #define BOMBA_ALCOOL 	10
 #define	BOMBA_SPRAY		8
