@@ -75,39 +75,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-//
-//        fun createExternalStoragePrivateFile() {
-//        // Create a path where we will place our private file on external
-//        // storage.
-//        val file = File(getExternalFilesDir(null), "alc_gel_on.png")
-//
-//            Timber.e( "=========== file = ${file}")
-//
-//            try {
-//            // Very simple code to copy a picture from the application's
-//            // resource into the external file.  Note that this code does
-//            // no error checking, and assumes the picture is small (does not
-//            // try to copy it in chunks).  Note that if external storage is
-//            // not currently mounted this will silently fail.
-//            val bbb = resources.openRawResource(R.drawable.alc_gel_on)
-//            val os: OutputStream = FileOutputStream(file)
-//            val data = ByteArray(bbb.available())
-//            bbb.read(data)
-//            os.write(data)
-//            bbb.close()
-//            os.close()
-//        } catch (e: IOException) {
-//            // Unable to create file, likely because external storage is
-//            // not currently mounted.
-//            Timber.e("ExternalStorage Error writing $file")
-//        }
-//    }
-
-
     fun validateConfigLocalization() {
         // Create a path where we will place our private file on external
         // storage.
         val path = getExternalFilesDir(null)
+        Timber.e( "=========== path=$path")
         val file = File(path, "config.json")
 
         if ( file.isFile  ) {
@@ -247,7 +219,10 @@ class MainActivity : AppCompatActivity() {
             btn_alcohol_dispenser.setBackgroundResource(R.drawable.alc_gel_off)
         }
 
-        painelSuporte.text = "Temperatura: " + CleaningMachine.sensorAnalogico1.toString() + "\n\n"
+        painelSuporte.text = "Temperatura: " + CleaningMachine.sensorAnalogico1.toString() + "\n" +
+                "S1: " + CleaningMachine.balanca1Status.toString() + "\n" +
+                "S2: " + CleaningMachine.balanca2Status.toString() + "\n" +
+                "M1: " + CleaningMachine.balanca3Status.toString()
 
     }
 
@@ -356,6 +331,7 @@ class MainActivity : AppCompatActivity() {
 
             if ( CleaningMachine.modoManutencaoHabilitado ) {
                 btn_modoSuporte.text = "Suporte\nON"
+                CleaningMachine.initRunFaseTimer(100)
                 CleaningMachine.modoManutencaoHabilitado = false
 
                 painelSuporte.visibility = View.GONE
@@ -365,6 +341,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 btn_modoSuporte.text = "Suporte\nOFF"
                 CleaningMachine.modoManutencaoHabilitado = true
+                CleaningMachine.cancelRunFaseTimer()
 
                 painelSuporte.visibility = View.VISIBLE
                 waiting_mode_painel_imagem.visibility = View.GONE

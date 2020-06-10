@@ -111,6 +111,8 @@ object Config {
         var configInputStream : InputStream
 
         path = context.getExternalFilesDir(null)
+        Timber.e( "=========== path=$path")
+
         val file = File(path, "config.json")
 
         if ( file.isFile  ) {

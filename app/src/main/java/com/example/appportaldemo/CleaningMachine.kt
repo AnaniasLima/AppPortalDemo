@@ -131,7 +131,7 @@ object CleaningMachine {
 
 
 
-    private fun initRunFaseTimer(timeout:Long) {
+    fun initRunFaseTimer(timeout:Long) {
         if ( timeout > 0L ) {
             runFaseHandler.postDelayed(runFaseRunnable, timeout )
         } else {
@@ -139,7 +139,7 @@ object CleaningMachine {
         }
     }
 
-    private fun cancelRunFaseTimer() {
+    fun cancelRunFaseTimer() {
         try {
             flagTimeout = false
             runFaseHandler.removeCallbacks(runFaseRunnable)
@@ -862,6 +862,31 @@ object CleaningMachine {
     fun processReceivedResponse(response: EventResponse) {
 
         var nextState = receivedState
+
+
+        if ( modoManutencaoHabilitado ) {
+            if  (response.eventType == EventType.FW_STATUS_RQ) {
+                sensorAnalogico1 = response.f1 / 10F
+                sensorAnalogico2 = response.f2 / 10F
+
+                sensor1Status = response.s1
+                sensor2Status = response.s2
+                sensor3Status = response.s3
+                sensor4Status = response.s4
+
+
+                balanca1Status = response.b1
+                balanca2Status = response.b2
+                balanca3Status = response.b3
+
+                mainActivity?.runOnUiThread {
+                    (mainActivity as MainActivity).mostraSensores()
+                }
+            }
+            return
+        }
+
+
 
         when (response.eventType) {
 
