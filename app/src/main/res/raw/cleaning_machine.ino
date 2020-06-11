@@ -10,12 +10,15 @@
 
 
 //------ Sensor Ultrason  -----------------------------
-#define PINO_LEITOR_ULTRASON_1_TRIGGER 	50 // 53 // Termometro
-#define PINO_LEITOR_ULTRASON_1_ECHO 	41 // 53 // Termometro
+#define PINO_LEITOR_ULTRASON_1_TRIGGER 	53 // 53 // Termometro 2  53 50
+#define PINO_LEITOR_ULTRASON_1_ECHO 	52 // 53 // Termometro 3  52 41
 
 
 #define PINO_LEITOR_ULTRASON_2_TRIGGER 	22 // 39 // Alcool Gel
 #define PINO_LEITOR_ULTRASON_2_ECHO 	40 // 39 // Alcool Gel
+
+
+
 
 
 //------ Bomba de alcool -----------------------------
@@ -67,10 +70,13 @@
 //=====> Timer Arduino
 //-------------------------------------------------
 auto timerManager = timer_create_default(); 
-#define	FREQUENCIA_TIMER_BOMBA	100 // 100ms
+#define	FREQUENCIA_TIMER_BOMBA			100 // 100ms
 
+#define	FREQUENCIA_LEITURA_ULTRASOM   	50
 
 int distanciaLidaSensor1, distanciaLidaSensor2;
+int distanciaMediaSensor1, distanciaMediaSensor2;
+
 int suspendeLeituraDosSensoresUltrason = 0;
 
 int tempoBombaAlcoolLigada = 2000;
@@ -214,25 +220,26 @@ void fazLeituraUltrasom_3(void);
 bool processaLeitoresUltrasom(void *argument) // optional argument given to in/at/every 
 {	static bool flag=0;
 
+
 	flag = ! flag;	
 
-    	if ( PINO_LEITOR_ULTRASON_1_TRIGGER ) fazLeituraUltrasom_1();
-    	if ( PINO_LEITOR_ULTRASON_2_TRIGGER ) fazLeituraUltrasom_2();
 
 	// TODO: Ver se da problema lendo tudo da mesma vez
 	if ( flag) {
+    	if ( PINO_LEITOR_ULTRASON_2_TRIGGER ) fazLeituraUltrasom_1();
 	} else {
+    	if ( PINO_LEITOR_ULTRASON_1_TRIGGER ) fazLeituraUltrasom_2();
 	}
 	
 	return (true);  // to repeat the action - false to stop
 }
 
+#define	TIMEOUT_PULSE_IN   3000  // 5882 microsegundos * 340metros por segundo = 2 metros ==> 5882 * 2  (5,8ms)
 
 
-
-#define AMOSTRAGENS   10
-#define DISTANCIA_LIMITE_SENSOR_1	15
-#define DISTANCIA_LIMITE_SENSOR_2	25
+#define AMOSTRAGENS   5
+#define DISTANCIA_LIMITE_SENSOR_1	20
+#define DISTANCIA_LIMITE_SENSOR_2	40
 
 int normalizaDistancia1(int distancia, int distanciaMaxima)
 {
@@ -267,7 +274,6 @@ int normalizaDistancia1(int distancia, int distanciaMaxima)
 	}
 
 	return(mediaAmostras);
-
 }
 
 // ---------- Leitor 1 ------------------
@@ -276,7 +282,7 @@ void fazLeituraUltrasom_1(void)
 	static int contagensAcima=0;
 	static int contagensAbaixo=0;
 
-	int duration,  distance;  
+	int duration,  distanceConsiderada;  
 
 	if ( PINO_LEITOR_ULTRASON_1_TRIGGER && (suspendeLeituraDosSensoresUltrason == 0)) {
 	    digitalWrite(PINO_LEITOR_ULTRASON_1_TRIGGER, LOW);  
@@ -284,18 +290,20 @@ void fazLeituraUltrasom_1(void)
 	    digitalWrite(PINO_LEITOR_ULTRASON_1_TRIGGER, HIGH);  
 	    delayMicroseconds(10);  
 	    digitalWrite(PINO_LEITOR_ULTRASON_1_TRIGGER, LOW);  
-	    duration = pulseIn(PINO_LEITOR_ULTRASON_1_ECHO, HIGH);  
+	    duration = pulseIn(PINO_LEITOR_ULTRASON_1_ECHO, HIGH, TIMEOUT_PULSE_IN);  
 
 		if (duration == 0 ) {
-			return;
+			distanciaLidaSensor1 = 0;
+			distanceConsiderada = DISTANCIA_LIMITE_SENSOR_1;
+		} else {
+		    // Convert in CM  
+		    distanceConsiderada = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
+			distanciaLidaSensor1 = distanceConsiderada;
 		}
-		
-	    // Convert in CM  
-	    distance = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
 
-		distanciaLidaSensor1  = normalizaDistancia1( distance, DISTANCIA_LIMITE_SENSOR_1);
+		distanciaMediaSensor1  = normalizaDistancia1( distanceConsiderada, DISTANCIA_LIMITE_SENSOR_1);
 
-		if ( distanciaLidaSensor1 <  distanciaPresencaSensor1  ) { 
+		if ( distanciaMediaSensor1 <  distanciaPresencaSensor1  ) { 
 			contagensAcima=0;
 			contagensAbaixo++;
 			if ( contagensAbaixo > QTD_LEITURAS_CONSECUTIVAS_ULTRASON ) {
@@ -355,7 +363,7 @@ void fazLeituraUltrasom_2(void)
 	static int contagensAcima=0;
 	static int contagensAbaixo=0;
 
-	int duration,  distance;  
+	int duration,  distanceConsiderada;  
 
 	if ( PINO_LEITOR_ULTRASON_2_TRIGGER && (suspendeLeituraDosSensoresUltrason == 0) ) {
 	    digitalWrite(PINO_LEITOR_ULTRASON_2_TRIGGER, LOW);  
@@ -363,18 +371,20 @@ void fazLeituraUltrasom_2(void)
 	    digitalWrite(PINO_LEITOR_ULTRASON_2_TRIGGER, HIGH);  
 	    delayMicroseconds(10);  
 	    digitalWrite(PINO_LEITOR_ULTRASON_2_TRIGGER, LOW);  
-	    duration = pulseIn(PINO_LEITOR_ULTRASON_2_ECHO, HIGH);  
+	    duration = pulseIn(PINO_LEITOR_ULTRASON_2_ECHO, HIGH, TIMEOUT_PULSE_IN);  
 	    
 		if (duration == 0 ) {
-			return;
+			distanciaLidaSensor2 = 0;
+			distanceConsiderada = DISTANCIA_LIMITE_SENSOR_2;
+		} else {
+		    // Convert in CM  
+		    distanceConsiderada = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
+			distanciaLidaSensor2 = distanceConsiderada;
 		}
-		
-	    // Convert in CM  
-	    distance = duration * 0.034 / 2;  // Speed of sound wave divided by 2 (go and back)
 
-		distanciaLidaSensor2  = normalizaDistancia2( distance, DISTANCIA_LIMITE_SENSOR_2);
+		distanciaMediaSensor2  = normalizaDistancia2( distanceConsiderada, DISTANCIA_LIMITE_SENSOR_2);
 
-		if ( distanciaLidaSensor2 <  distanciaPresencaSensor2  ) {
+		if ( distanciaMediaSensor2 <  distanciaPresencaSensor2  ) {
 			contagensAcima=0;
 			contagensAbaixo++;
 			if ( contagensAbaixo > QTD_LEITURAS_CONSECUTIVAS_ULTRASON ) {
@@ -457,9 +467,7 @@ void setup()
 		setupStepper();
 	}
 
-
-	timerManager.every( 50, processaLeitoresUltrasom); // tempo em ms
-//	timerManager.every( 500, mostraLeitoresUltrasom); // tempo em ms
+	timerManager.every( FREQUENCIA_LEITURA_ULTRASOM, processaLeitoresUltrasom); // tempo em ms
 
 
 	if ( LED_BUILTIN  					) pinMode(LED_BUILTIN, OUTPUT);
@@ -513,12 +521,16 @@ int readSensor(int sensor)
 //========================================================================================
 // readSensorAnalogico
 //========================================================================================
-float readSensorAnalogico(int sensor) 
+float readSensorAnalogico(int sensor, int valorRefencia) 
 {	static int semFebre = 0;
 	int valor;
 	//-------- Versão para funcionar em placas COM sensores	
 	if ( sensor == 1 ) {
-		valor = random(360, 376);	// TODO: AJUSTAR
+		if ( valorRefencia <= 2 ) {
+			valor = random(373, 400);	// TODO: AJUSTAR
+		} else {
+			valor = random(360, 372);	// TODO: AJUSTAR
+		}
 		return(valor);
 	} else if ( sensor == 2 ) {
 		return(-1);
@@ -880,6 +892,29 @@ int trataValoresGenericos(char *valor)
 //========================================================================================
 void processaPar(char *token, char *valor) 
 {	
+
+	if ( token[0] == 'c'  ) {
+		if ( valor[3] == 's' )  {	// fw_status_rq
+			iComando = CMD_STATUS_RQ;
+			return;
+		}
+	} else if ( token[0] == 'a' ) {
+		if ( valor[3] == 'q' )  { // question
+			iComando = CMD_STATUS_RQ;
+			return;
+		}
+	} else if ( token[0] == 'p' ) { // packetNumber
+		packetNumber = atoi(valor);
+		if (packetNumber == 1 ) {
+			numPktResp = 0; // Para resincronizar as respostas
+			zeraControleEstados();
+		}
+		return;
+	} else if ( token[0] == 'h' ) { // hour
+		strcpy(strHora, valor);
+		return;
+	}
+	
 	if ( strcmp(token, "cmd") == 0 ) {
 		if 		( strcmp(valor, "fw_restart"   ) == 0 ) { iComando = CMD_RESTART; } 
 		else if ( strcmp(valor, "fw_status_rq" ) == 0 ) { iComando = CMD_STATUS_RQ;} 
@@ -905,6 +940,7 @@ void processaPar(char *token, char *valor)
 		packetNumber = atoi(valor);
 		if (packetNumber == 1 ) {
 			numPktResp = 0; // Para resincronizar as respostas
+			zeraControleEstados();
 		}
 	} else if ( strcmp(token, "hour") == 0 ) {
 		strcpy(strHora, valor);
@@ -912,7 +948,6 @@ void processaPar(char *token, char *valor)
 	
 	return;
 }
-
 
 
 
@@ -985,8 +1020,8 @@ void processaLinha(void)
 			addIntResposta("numPktResp", numPktResp);
 			addIntResposta("packetNumber", packetNumber);
 			addIntResposta("error_n", 0); 
-			addIntResposta("f1", readSensorAnalogico(1)) ;
-			addIntResposta("f2", readSensorAnalogico(2)) ;
+			addIntResposta("f1", readSensorAnalogico(1, distanciaMediaSensor1)) ; // Só pra poder controlar a geração ou não de febre
+			addIntResposta("f2", readSensorAnalogico(2, 0)) ;
 			
 			addIntResposta("s1", readSensor(1)) ;
 			addIntResposta("s2", readSensor(2));
@@ -996,11 +1031,13 @@ void processaLinha(void)
 			addIntResposta("b1", readBalanca(1));
 			addIntResposta("b2", readBalanca(2));
 			addIntResposta("b3", readBalanca(3));
-#else			
-			addIntResposta("b1", distanciaLidaSensor1);
-			addIntResposta("b2", distanciaLidaSensor2);
-			addIntResposta("b3", 0);
 #endif			
+
+			addIntResposta("o1", distanciaMediaSensor1);
+			addIntResposta("o2", distanciaMediaSensor2);
+			addIntResposta("o3", distanciaLidaSensor1);
+			addIntResposta("o4", distanciaLidaSensor2);
+			
 			addStrResposta("hour", strHora);
 			addStrResposta("ret", (erro == 0) ? strRet : "error");
 
@@ -1064,21 +1101,38 @@ void processaLinha(void)
 //========================================================================================
 int indRXPacote = 0;
 
+//char buffer[500];
+//int indBuffer=0;
+
 void processaSerial(void)
 {
 	static int estado = AGUARDANDO_START;
 
 	char data = Serial.read(); 
 
+	if (data == 0 ) return;
+
 	if (data == 0x2 ) { // STX
 		suspendeLeituraDosSensoresUltrason = 1;// Vai começacr um pacote vamos suspender a leitura do leitor ultrasom
+//		indBuffer=0;
+//		buffer[indBuffer++] = '{';
+//		buffer[indBuffer++] = '@';
+		return;
 	}
 	
 	if ( data == 0x3 ) { // ETX
-		suspendeLeituraDosSensoresUltrason = 0;// ao terminar pacote habilita leitura do leitor ultrasom
+//		if  (indBuffer > 10) {
+//			sprintf(&buffer[indBuffer], " - %6d     ", contabytes);
+//			buffer[indBuffer + 9] = '}';
+//			buffer[indBuffer + 10] = '\0';
+//			Serial.println(buffer);
+//		}
+//		indBuffer=0;
 		return;
 	}
 
+//	buffer[indBuffer++] = ((data < 32) || (data == '{') || (data == '}') ) ? '.' : data;
+	
 	if ( data == '\n') {
 		return;
 	}

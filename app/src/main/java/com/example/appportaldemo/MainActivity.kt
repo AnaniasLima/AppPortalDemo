@@ -220,71 +220,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         painelSuporte.text = "Temperatura: " + CleaningMachine.sensorAnalogico1.toString() + "\n" +
-                "S1: " + CleaningMachine.balanca1Status.toString() + "\n" +
-                "S2: " + CleaningMachine.balanca2Status.toString() + "\n" +
-                "M1: " + CleaningMachine.balanca3Status.toString()
+                "M1: " + CleaningMachine.valorOpcional1.toString() + "\n" +
+                "M2: " + CleaningMachine.valorOpcional2.toString() + "\n" +
+                "L1: " + CleaningMachine.valorOpcional3.toString() + "\n" +
+                "L2: " + CleaningMachine.valorOpcional4.toString()
 
     }
 
-
-
-    fun ajustaBalancas() {
-//        // TODO:xx
-//        alcohol_seekBar.setProgress(CleaningMachine.balanca1Status)
-//        desinfectante_seekBar.setProgress(CleaningMachine.balanca2Status)
-//        desinfectante_pe_seekBar.setProgress(CleaningMachine.balanca3Status)
-    }
 
 
     var mPlayer : MediaPlayer? = null
 
     fun setButtonListeners() {
 
-
         btnCantinhoSuperiorDireito.setOnClickListener{
-
-//            if ( mPlayer != null) {
-//                if (mPlayer!!.isPlaying) {
-//                    mPlayer!!.stop()
-//                }
-//                mPlayer!!.release()
-//                mPlayer = null
-//            }
-//
-//            mPlayer = MediaPlayer.create(this, R.raw.audio3);
-//            var volume = 0.1F * contaMagica
-//
-//            if ( mPlayer != null) {
-//                Timber.e("----- volume=${volume}")
-//                mPlayer!!.setVolume(volume, volume)
-//                mPlayer!!.start()
-//            }
-//
-
-            if ( applicationContext.checkSelfPermission(android.Manifest.permission.CHANGE_CONFIGURATION ) !=
-                    PackageManager.PERMISSION_GRANTED) {
-                Timber.e("----- NOK")
-            } else {
-                Timber.e("----- OK")
-
-            }
-
-
             contaMagica++
             Timber.e("contaMagica=${contaMagica}")
-
-//            if ( contaMagica == 1) {
-//                WaitingModeThread.newEnterWaitingMode(5, Config.testMedias)
-//            } else {
-//                WaitingModeThread.newLeaveWaitingMode()
-//            }
-
-
-
             if ( contaMagica > 3 ) {
                 painel_inferior.visibility=View.VISIBLE
             }
-            if ( contaMagica > 10 ) {
+            if ( contaMagica > 8 ) {
                 painel_suporte.visibility=View.VISIBLE
             }
         }

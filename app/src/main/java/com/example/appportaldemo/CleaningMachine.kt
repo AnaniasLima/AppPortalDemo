@@ -55,7 +55,7 @@ enum class Sensor  {
 @SuppressLint("StaticFieldLeak")
 object CleaningMachine {
     private const val WAIT_WHEN_OFFLINE = 5000L
-    private var DEFAULT_TIME_TO_QUESTION = 500L
+    private var DEFAULT_TIME_TO_QUESTION = 250L
     private var SELECTED_TIME_TO_QUESTION = DEFAULT_TIME_TO_QUESTION
     private const val WAIT_TIME_TO_RESPONSE = 400L
     private const val MAX_RUN_DEMO_TIMEOUT = 30000L
@@ -97,6 +97,12 @@ object CleaningMachine {
     var balanca1Status = 0
     var balanca2Status = 0
     var balanca3Status = 0
+
+
+    var valorOpcional1 = 0
+    var valorOpcional2 = 0
+    var valorOpcional3 = 0
+    var valorOpcional4 = 0
 
 
     var waitingThermometer : Boolean = false
@@ -874,10 +880,17 @@ object CleaningMachine {
                 sensor3Status = response.s3
                 sensor4Status = response.s4
 
+                balanca1Status = 1
+                balanca2Status = 1
+                balanca3Status = 1
+//                balanca1Status = response.b1
+//                balanca2Status = response.b2
+//                balanca3Status = response.b3
 
-                balanca1Status = response.b1
-                balanca2Status = response.b2
-                balanca3Status = response.b3
+                valorOpcional1 = response.o1
+                valorOpcional2 = response.o2
+                valorOpcional3 = response.o3
+                valorOpcional4 = response.o4
 
                 mainActivity?.runOnUiThread {
                     (mainActivity as MainActivity).mostraSensores()
@@ -917,10 +930,17 @@ object CleaningMachine {
                         sensor3Status = response.s3
                         sensor4Status = response.s4
 
+                        balanca1Status = 1
+                        balanca2Status = 1
+                        balanca3Status =1
+//                        balanca1Status = response.b1
+//                        balanca2Status = response.b2
+//                        balanca3Status = response.b3
 
-                        balanca1Status = response.b1
-                        balanca2Status = response.b2
-                        balanca3Status = response.b3
+                        valorOpcional1 = response.o1
+                        valorOpcional2 = response.o2
+                        valorOpcional3 = response.o3
+                        valorOpcional4 = response.o4
 
                         mainActivity?.runOnUiThread {
                             (mainActivity as MainActivity).mostraSensores()
@@ -930,7 +950,6 @@ object CleaningMachine {
 
                     mainActivity?.runOnUiThread {
                         (mainActivity as MainActivity).ajustaSensores()
-                        (mainActivity as MainActivity).ajustaBalancas()
                     }
 
 
@@ -942,10 +961,17 @@ object CleaningMachine {
                     sensor3Status = response.s3
                     sensor4Status = response.s4
 
+                    balanca1Status = 1
+                    balanca2Status = 1
+                    balanca3Status = 1
+//                    balanca1Status = response.b1
+//                    balanca2Status = response.b2
+//                    balanca3Status = response.b3
 
-                    balanca1Status = response.b1
-                    balanca2Status = response.b2
-                    balanca3Status = response.b3
+                    valorOpcional1 = response.o1
+                    valorOpcional2 = response.o2
+                    valorOpcional3 = response.o3
+                    valorOpcional4 = response.o4
 
 
                     when (receivedState) {
@@ -971,7 +997,6 @@ object CleaningMachine {
                         }
 
                         MachineState.WAITING_THERMOMETER -> {
-                            Timber.e("RX temp sensorAnalogico1=${sensorAnalogico1} ")
                             if ( ! pessoaEmSensor(Sensor.PRESENCA) ) {
                                 changeCurrentState(MachineState.WAITING_PEOPLE, FROM_EXT)
                             }

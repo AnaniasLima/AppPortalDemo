@@ -252,6 +252,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             // Ou seja o arduin perdeu 38 pacotes e 11.000
             // TODO: Colocar wack e parar medição ultrason durante pacote
 
+//            val startBytes =  byteArrayOf( 2, 2, 2, 2, 2, 2, 2, 2) // STX
             val startBytes =  byteArrayOf( 2, 2, 2) // STX
             val endBytes =  byteArrayOf( 3, 3, 3) // ETX
 
@@ -267,18 +268,15 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             usbSerialDevice?.write(pktStr.toByteArray())
             usbSerialDevice?.write(endBytes)
 
-
-//            if ( ! communicationModeDummy ) {
-
-                if ( ArduinoDevice.getLogLevel(FunctionType.FX_TX)  ) {
-                    ScreenLog.add(LogType.TO_LOG, "TX: ${pktStr}")
-                } else {
-                    // Só vamos logar quando painel de suoporte estiver habilitado
-                    if ( (Config.mainActivity!!).painel_suporte.visibility == View.VISIBLE) {
-                        Timber.d("TX: $pktStr")
-                    }
+            if ( ArduinoDevice.getLogLevel(FunctionType.FX_TX)  ) {
+                ScreenLog.add(LogType.TO_LOG, "TX: ${pktStr}")
+            } else {
+                // Só vamos logar quando painel de suoporte estiver habilitado
+                if ( (Config.mainActivity!!).painel_suporte.visibility == View.VISIBLE) {
+                    Timber.d("TX: $pktStr")
                 }
-//            }
+            }
+            // sleep(50)
         } catch (e: Exception) {
             Timber.d("Exception in send: ${e.message} ")
         }

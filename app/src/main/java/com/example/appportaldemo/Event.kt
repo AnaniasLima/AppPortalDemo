@@ -61,6 +61,12 @@ data class EventResponse(
     var b1: Int = 0,
     var b2: Int = 0,
     var b3: Int = 0,
+
+    var o1: Int = 0,
+    var o2: Int = 0,
+    var o3: Int = 0,
+    var o4: Int = 0,
+
     var ret: String = "",
     var status:String = "",
     var fsm_state: String = "",
