@@ -48,7 +48,6 @@ object ArduinoDevice {
         // ArduinoDevice.usbManager = applicationContext.getSystemService(Context.USB_SERVICE) as UsbManager
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
 
-        usbSetFilters()
         usbSerialImediateChecking(200)
     }
 
@@ -84,12 +83,7 @@ object ArduinoDevice {
     fun usbSerialContinueChecking() {
         var delayToNext: Long = USB_SERIAL_REQUEST_INTERVAL
 
-
         if ( ! ConnectThread.isConnected ) {
-//            val c = Calendar.getInstance()
-//            val strHora =  String.format("%02d:%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))
-//            mostraNaTela("agendando proximo STATUS_REQUEST para:---" + strHora + " ${delayToNext}ms")
-
             delayToNext = USB_SERIAL_TIME_TO_CONNECT_INTERVAL
         }
 
@@ -98,11 +92,6 @@ object ArduinoDevice {
     }
 
     fun usbSerialImediateChecking(delayToNext: Long) {
-        val c = Calendar.getInstance()
-        val strHora =  String.format("%02d:%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))
-
-        mostraNaTela("agendando STATUS_REQUEST para:---${strHora} + ${delayToNext}ms")
-
         usbSerialRequestHandler.removeCallbacks(usbSerialRunnable)
         usbSerialRequestHandler.postDelayed(usbSerialRunnable, delayToNext)
     }
@@ -150,51 +139,15 @@ object ArduinoDevice {
         }
     }
 
-    val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            Timber.i("WWW------------------------- BroadcastReceiver")
-            if ( intent != null && usbManager != null) {
-                Timber.i("WWW------------------------- intent.action = " + intent.action.toString())
-                mostraNaTela("------------------------- intent.action = " + intent.action.toString())
-                when (intent.action!!) {
-                    ACTION_USB_PERMISSION -> {
-
-                        val granted: Boolean = intent.extras!!.getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED)
-                        Timber.i("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted.toString()}")
-                        mostraNaTela("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted.toString()}")
-
-                        val granted1: Boolean = intent.extras!!.getBoolean(UsbManager.ACTION_USB_DEVICE_ATTACHED)
-                        Timber.i("WWW ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted1.toString()}")
-                        mostraNaTela("ACTION_USB_PERMISSION------------------------- Permmissao concedida = ${granted1.toString()}")
-
-                        usbSerialImediateChecking(200)
-
-
-                    }
-                    UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
-                        (mainActivity as MainActivity).jaViuUSB = true
-                        mostraNaTela("ACTION_USB_DEVICE_ATTACHED")
-                        connect()
-                    }
-                    UsbManager.ACTION_USB_DEVICE_DETACHED -> {
-                        mostraNaTela("ACTION_USB_DEVICE_DETACHED")
-                        disconnect()
-                    }
-                }
-            }
-        }
-    }
 
     fun connect() {
-        mostraNaTela("Verificando conexão...")
 
         if ( ConnectThread.isConnected ) {
-            if ( connectThread == null) {
-                throw IllegalStateException("Erro interno 001")
-            }
-            mostraNaTela("Já estava connectado.")
+            mostraNaTela("connect: Já esta conectado.")
             return
         }
+
+        mostraNaTela("Verificando conexão...")
 
         if ( usbManager != null ) {
             if ( usbManager!!.deviceList.size > 0  ) {
@@ -203,10 +156,9 @@ object ArduinoDevice {
                 if (connectThread != null ) {
                     Timber.i("ConnectThread criada com sucesso.")
                     connectThread!!.priority = Thread.MAX_PRIORITY
-
                     connectThread!!.start()
 
-                    Thread.sleep(5000) // para esperar a reconfiguração do arduino
+                    Thread.sleep(1000) // para esperar a reconfiguração do arduino // ANANA
 
                     if ( ! CleaningMachine.isStateMachineRunning() ) {
                         if ( CleaningMachine.startStateMachine() ) {
@@ -287,15 +239,6 @@ object ArduinoDevice {
         return ret
     }
 
-    fun usbSetFilters() {
-        val filter = IntentFilter()
-        filter.addAction(ACTION_USB_PERMISSION)
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED)
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED)
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
-        appContext!!.registerReceiver(broadcastReceiver, filter)
-    }
 
     private var rxLogEnabled : Boolean = false
     private var txLogEnabled : Boolean = false

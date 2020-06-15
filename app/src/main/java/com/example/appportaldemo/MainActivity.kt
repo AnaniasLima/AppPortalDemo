@@ -1,14 +1,15 @@
 package com.example.appportaldemo
 
-import android.app.Activity
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
-import android.view.MotionEvent
+import android.os.SystemClock
 import android.view.View
-import android.view.View.OnTouchListener
 import android.view.Window
 import android.view.WindowManager
 import android.widget.SeekBar
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     var temperaturaFake: Float = 0F
     var contaMagica = 0
     var jaViuUSB:Boolean=false
-
+    var chamadoPeloBoot = 0
     var primeiraConexaoHandler: Handler = Handler()
     var primeiraConexaoRunnable: Runnable = Runnable {
         ArduinoDevice.connect()
@@ -93,11 +94,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        requestedOrientation
+        var intent = intent
+
+        var chamadoPeloBoot = intent.getIntExtra("CHAMANDO_DO_BOOT", 0)
+
+//        requestedOrientation
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 //        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
 
@@ -111,7 +117,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        var tempoSegundosDesdeUltimoBoot = SystemClock.elapsedRealtime() / 1000
+        Timber.i(String.format("tempoSegundosDesdeUltimoBoot = %02d:%02d:%02d", tempoSegundosDesdeUltimoBoot / 3600, (tempoSegundosDesdeUltimoBoot%3600)/60,tempoSegundosDesdeUltimoBoot%60))
+        Timber.i("chamadoPeloBoot = ${chamadoPeloBoot}")
+
 
 //        validateConfigLocalization()
 
@@ -121,11 +131,35 @@ class MainActivity : AppCompatActivity() {
         CleaningMachine.start(this, applicationContext)
         WaitingModeThread.initialSetting(this, waiting_mode_painel_video, waiting_mode_painel_imagem, btnInvisivel)
 
-        xxx()
-        setButtonListeners()
-
-        WaitingModeThread.start()
+        if ( tempoSegundosDesdeUltimoBoot < (60 + 20) ) {
+            btn_show_telaBoot.setBackgroundResource(R.drawable.jm_port)
+            btn_show_telaBoot.visibility = View.VISIBLE
+            main_area.visibility = View.GONE
+        } else {
+            xxx()
+            setButtonListeners()
+            WaitingModeThread.start()
+        }
     }
+
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        ScreenLog.add(LogType.TO_LOG, "WWW Entrei na funcao onNewIntent action=${intent.action}")
+
+        if (intent.action != null && intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
+            ScreenLog.add(LogType.TO_LOG, "WWW ACTION_USB_DEVICE_ATTACHED")
+            jaViuUSB = true
+            ArduinoDevice.connect()
+        }
+
+        if (intent.action != null && intent.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
+            println("WWW ACTION_USB_DEVICE_DETACHED")
+            ScreenLog.add(LogType.TO_LOG, "WWW ACTION_USB_DEVICE_DETACHED")
+            ArduinoDevice.disconnect()
+        }
+    }
+
 
     fun xxx() {
         ajustaSensores()
@@ -154,9 +188,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-
-
-
     }
 
     fun erroFatal(str: String?)
@@ -278,8 +309,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnSimulaRequest.setOnClickListener {
-            ArduinoDevice.requestToSend(EventType.FW_LED, "9,0") // FW_LED
+        btnOpenApp.setOnClickListener {
+            openApp()
         }
 
         btn_modoSuporte.setOnClickListener {
@@ -304,14 +335,23 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-
-
-        // --------------------------------------------------
-        // Rodape -----------------------------------
-        // --------------------------------------------------
-
-
-
     }
+
+    fun openApp() {
+        var manager : PackageManager = applicationContext.getPackageManager()
+        try {
+            var i =  manager.getLaunchIntentForPackage("com.simplemobiletools.filemanager.pro.debug");
+            if (i == null) {
+                return
+            }
+            i.addCategory(Intent.CATEGORY_LAUNCHER);
+            applicationContext.startActivity(i);
+            return
+        } catch (e: ActivityNotFoundException) {
+            return
+        }
+    }
+
+
 
 }

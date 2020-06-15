@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.io.IOException
 import java.util.HashMap
+import android.os.Process
 
 class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActivity: AppCompatActivity, val myContext: Context) : Thread(),
     UsbSerialInterface.UsbReadCallback {
@@ -36,18 +37,15 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
     }
 
     fun init() {
-        println("Criando Thread ConnectThread")
-        Timber.e("Criando Thread ConnectThread")
+        Timber.i("Criando Thread ConnectThread")
     }
 
     private fun mostraNaTela(str:String) {
         ScreenLog.add(LogType.TO_LOG, str)
-//        (mainActivity as MainActivity).mostraNaTela(str)
     }
 
     private fun mostraEmHistory(str:String) {
         ScreenLog.add(LogType.TO_HISTORY, str)
-//        (mainActivity as MainActivity).mostraEmHistory(str)
     }
 
     /**
@@ -55,9 +53,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
      * @return true if the Event was created and able to be sent
      */
     fun requestToSend(eventType: EventType, action: String) : Boolean {
-
-//        Timber.i(" requestToSend ${EventType} action:${action}: listSize=${EVENT_LIST.size}")
-
         if ( isConnected && (!finishThread )) {
             val event = Event(eventType = eventType, action = action)
             EVENT_LIST.add(event)
@@ -80,10 +75,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             if ( ch.toInt() == 0 ) break
             if ( ch.toChar() == '{') {
                 if ( pktInd > 0 ) {
-                    Timber.d("Vai desprezar: ${String(
-                        receivedBytes, 0,
-                        pktInd
-                    )}")
+                    Timber.d("Vai desprezar: ${String(receivedBytes, 0, pktInd)}")
                 }
                 pktInd = 0
             }
@@ -92,7 +84,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                     receivedBytes[pktInd++] = ch
                     receivedBytes[pktInd] = 0
                     if (ch.toChar() == '}') {
-
                         if ( receivedBytes[1].toChar() == '@' ) {
                             Timber.e("ARDUINO ==> ${String(receivedBytes, 0, pktInd)}")
                         } else {
@@ -110,32 +101,28 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
 
     fun onCommandReceived(commandReceived: String) {
-
         pendingResponse = 0
-
         if ( ArduinoDevice.getLogLevel(FunctionType.FX_RX)   ) {
             ScreenLog.add(LogType.TO_LOG, "RX: ${commandReceived}")
         } else {
-            // Só vamos logar quando painel de suoporte estiver habilitado
+            // Só vamos gerar log quando painel de suporte estiver habilitado
             if ( (Config.mainActivity!!).painel_suporte.visibility == View.VISIBLE) {
                 Timber.d("RX: ${commandReceived}")
             }
-
         }
 
         try {
             val eventResponse = Gson().fromJson(commandReceived, EventResponse::class.java)
             EventType.getByCommand(eventResponse.cmd)?.let {
                 eventResponse.eventType = it
-
                 if ( eventResponse.eventType == EventType.FW_NACK ) {
-                    Timber.e("=============== FW_NACK =======================: ${commandReceived}")
+                    Timber.e("===== FW_NACK =====: ${commandReceived}")
                 } else {
                     try {
                         ArduinoDevice.onEventResponse(eventResponse)
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        Timber.e("=============== ERRO AO AVALIAR PACOTE =======================: ${eventResponse}")
+                        Timber.e("===== ERRO AO AVALIAR PACOTE =====: ${eventResponse}")
                         mostraEmHistory("ERRO AO AVALIAR PACOTE")
                         return
                     }
@@ -143,11 +130,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             }
         } catch (e: Exception) {
             EventResponse.invalidJsonPacketsReceived++
-            Timber.e("===============JSON INVALIDO (%d)=======================: ${commandReceived}", EventResponse.invalidJsonPacketsReceived)
+            Timber.e("===== JSON INVALIDO (%d) =====: ${commandReceived}", EventResponse.invalidJsonPacketsReceived)
             mostraEmHistory("Recebido JSON INVALIDO")
             return
         }
-
     }
 
 
@@ -160,15 +146,13 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
     }
 
     override fun run() {
-//        this.priority(Thread.MAX_PRIORITY)
 
-//        mainActivity.runOnUiThread {
-//            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.INVISIBLE
-//            WaitingMode.enterWaitingMode(VideoFase.HELP)
-//        }
+        Process.setThreadPriority(10);
 
 
-        if ( operation ==  CONNECT) {
+        if ( operation ==  DISCONNECT) {
+            disconnectInBackground()
+        } else {
             if ( connectInBackground() ) {
                 finishThread = false
                 pendingResponse = 0
@@ -189,7 +173,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                     Config.tempoBomba4))
 
                 ArduinoDevice.requestToSend(EventType.FW_STATUS_RQ, Event.QUESTION)
-
 
                 while ( ! finishThread ) {
                     if ( EVENT_LIST.isEmpty() ) {
@@ -214,14 +197,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                 }
                 disconnectInBackground()
             }
-        } else if ( operation ==  DISCONNECT) {
-            disconnectInBackground()
         }
-
-//        mainActivity.runOnUiThread {
-//            (mainActivity as MainActivity).btn_sem_comunicacao.visibility = View.VISIBLE
-//            WaitingMode.enterWaitingMode(VideoFase.HELP)
-//        }
 
         isConnected = false
     }
@@ -248,11 +224,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
             val pktStr: String = Event.getCommandData(curEvent)
 
-            // "numPktResp":11838,"packetNumber":11880 com temporização de 250L
-            // Ou seja o arduin perdeu 38 pacotes e 11.000
-            // TODO: Colocar wack e parar medição ultrason durante pacote
-
-//            val startBytes =  byteArrayOf( 2, 2, 2, 2, 2, 2, 2, 2) // STX
             val startBytes =  byteArrayOf( 2, 2, 2) // STX
             val endBytes =  byteArrayOf( 3, 3, 3) // ETX
 
@@ -260,7 +231,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             if ( forcaDelay > 0) {
                 Timber.e("Aguardado delay do pacote ${forcaDelay}")
                 forcaDelay--
-                sleep(1000)
+                sleep(200) // ANANA
             }
 
 
@@ -311,16 +282,10 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         }
 
         try {
-            val m_device    : UsbDevice? = selectDevice(0)
+            val m_device    : UsbDevice? = selectDevice()
 
             if ( m_device != null ) {
                 val m_connection: UsbDeviceConnection? = usbManager.openDevice(m_device)
-
-                ScreenLog.add(LogType.TO_LOG,"hasPermission = " + usbManager.hasPermission(m_device).toString())
-                ScreenLog.add(LogType.TO_LOG,"deviceClass = " + m_device.deviceClass.toString())
-                ScreenLog.add(LogType.TO_LOG,"subclass = " + m_device.deviceSubclass.toString())
-                ScreenLog.add(LogType.TO_LOG,"protocol = " + m_device.deviceProtocol.toString())
-                ScreenLog.add(LogType.TO_LOG,"deviceName = " + m_device.deviceName)
                 ScreenLog.add(LogType.TO_LOG,"vendorId = " + m_device.vendorId.toString())
                 ScreenLog.add(LogType.TO_LOG,"productId = " + m_device.productId.toString())
 
@@ -370,39 +335,63 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         }
     }
 
-    private fun selectDevice(vendorRequired:Int) : UsbDevice? {
-        var selectedDevice: UsbDevice? = null
-        val deviceList : HashMap<String, UsbDevice>? = usbManager.deviceList
-        if ( !deviceList?.isEmpty()!!) {
-            var device: UsbDevice?
-            println("Device list size: ${deviceList.size}")
-            deviceList.forEach { entry ->
-                device = entry.value
-                val deviceVendorId: Int = device!!.vendorId
-                ScreenLog.add(LogType.TO_LOG,"Device localizado. Vendor:" + deviceVendorId.toString() + "  productId: " + device!!.productId + "  Name: " + device!!.productName)
-                Timber.i("Device Vendor.Id: %d",  deviceVendorId)
-                if ( (vendorRequired == 0) || (deviceVendorId == vendorRequired) ) {
+//    private fun selectDevice(vendorRequired:Int) : UsbDevice? {
+//        var selectedDevice: UsbDevice? = null
+//        val deviceList : HashMap<String, UsbDevice>? = usbManager.deviceList
+//        if ( !deviceList?.isEmpty()!!) {
+//            var device: UsbDevice?
+//            println("Device list size: ${deviceList.size}")
+//            deviceList.forEach { entry ->
+//
+//                device = entry.value
+//                val deviceVendorId: Int = device!!.vendorId
+//                ScreenLog.add(LogType.TO_LOG,"Device localizado. Vendor:" + deviceVendorId.toString() + "  productId: " + device!!.productId + "  Name: " + device!!.productName)
+//                Timber.i("Device Vendor.Id: %d",  deviceVendorId)
+//                if ( (vendorRequired == 0) || (deviceVendorId == vendorRequired) ) {
+//
+//                    if ( ! usbManager.hasPermission(device)) {
+//                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado NAO tem permissao")
+//                        val intent: PendingIntent = PendingIntent.getBroadcast(myContext, 0, Intent(ArduinoDevice.ACTION_USB_PERMISSION), PendingIntent.FLAG_UPDATE_CURRENT)
+//                        usbManager.requestPermission(device, intent)
+//                    } else {
+//                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado TEM permissao")
+//                        ScreenLog.add(LogType.TO_LOG,"Device Selecionado")
+//                        Timber.i("Device Selected")
+//                        selectedDevice = device
+//                        return selectedDevice
+//                    }
+//                }
+//            }
+//        } else {
+//            ScreenLog.add(LogType.TO_LOG,"No serial device connected")
+//            Timber.i("No serial device connected")
+//        }
+//        return selectedDevice
+//    }
 
-                    if ( ! usbManager.hasPermission(device)) {
-                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado NAO tem permissao")
-                        val intent: PendingIntent = PendingIntent.getBroadcast(myContext, 0, Intent(ArduinoDevice.ACTION_USB_PERMISSION), PendingIntent.FLAG_UPDATE_CURRENT)
-                        usbManager.requestPermission(device, intent)
-                    } else {
-                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado TEM permissao")
-                        ScreenLog.add(LogType.TO_LOG,"Device Selecionado")
-                        Timber.i("Device Selected")
-                        selectedDevice = device
-                        return selectedDevice
-                    }
+
+    private fun selectDevice() : UsbDevice? {
+        val deviceList = usbManager.deviceList
+        val deviceIterator = deviceList.values.iterator()
+        var usbCommDevice: UsbDevice? = null
+
+        var device: UsbDevice?
+        while (deviceIterator.hasNext() && (usbCommDevice == null) ) {
+            device = deviceIterator.next()
+            val count = device!!.interfaceCount
+            for (i in 0 until count) {
+                val intf = device.getInterface(i)
+                mostraNaTela("ZZZ intf.interfaceClass=${intf.interfaceClass}")
+                if ( intf.interfaceClass == android.hardware.usb.UsbConstants.USB_CLASS_COMM  ) {
+                    mostraNaTela("ZZZ vai executar usbManager.requestPermission(device, permissionIntent)")
+//                    usbManager.requestPermission(device, permissionIntent)
+                    usbCommDevice = device
+                    break
                 }
             }
-        } else {
-            ScreenLog.add(LogType.TO_LOG,"No serial device connected")
-            Timber.i("No serial device connected")
         }
-        return selectedDevice
+
+        return usbCommDevice
     }
-
-
 
 }

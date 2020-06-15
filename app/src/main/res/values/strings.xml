@@ -25,7 +25,7 @@
 
     <string name="demoOn">Demo ON</string>
     <string name="statusRequest">Status</string>
-    <string name="simulaRequest">Simula</string>
+    <string name="openApp">OpenApp</string>
     <string name="modoSuporte">Suporte\nON</string>
 
     <string name="startStateMachine">Start\nFSM</string>

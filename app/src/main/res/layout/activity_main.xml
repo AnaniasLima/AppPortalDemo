@@ -8,6 +8,12 @@
     android:background="@color/fundo"
     tools:ignore="ExtraText">
 
+    <Button  android:id="@+id/btn_show_telaBoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@drawable/full_screen_background"/>
+
 
     // Main Area --------------------------------------
     <androidx.constraintlayout.widget.ConstraintLayout  android:id="@+id/main_area"
@@ -307,7 +313,7 @@
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
             android:text="@string/clear" />
 
-        <Button android:id="@+id/btnSimulaRequest"
+        <Button android:id="@+id/btnOpenApp"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:visibility="visible"
@@ -315,7 +321,7 @@
             android:layout_weight="1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
-            android:text="@string/simulaRequest" />
+            android:text="@string/openApp" />
 
         <Button android:id="@+id/btn_modoSuporte"
             android:layout_width="wrap_content"
