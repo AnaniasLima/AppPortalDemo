@@ -129,9 +129,16 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                 }
             }
         } catch (e: Exception) {
-            EventResponse.invalidJsonPacketsReceived++
+            EventResponse.invalidJsonPacketsReceived++ // TODO_ANANA - Mostrar com toque mágico na tela
             Timber.e("===== JSON INVALIDO (%d) =====: ${commandReceived}", EventResponse.invalidJsonPacketsReceived)
             mostraEmHistory("Recebido JSON INVALIDO")
+
+            mainActivity?.runOnUiThread {
+                (mainActivity as MainActivity).btnShowErros.text = String.format("Json=%d\nxxx=%d", EventResponse.invalidJsonPacketsReceived, 0)
+            }
+
+
+
             return
         }
     }
@@ -147,8 +154,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
     override fun run() {
 
-        Process.setThreadPriority(10);
-
+        Process.setThreadPriority(10);      // TODO_ANANA : Ver se vale de alguma coisa
 
         if ( operation ==  DISCONNECT) {
             disconnectInBackground()
@@ -185,7 +191,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                         }
 
                         // Eventualmente acontece de mandar pacotes e não receber resposta (não sei por que, ,as acontece)
-                        // sendo assim, se mandarmos mais de 2 pacotes e não recebermos resposta, vamos desconectar
+                        // sendo assim, se mandarmos mais de 'n' pacotes e não recebermos resposta, vamos desconectar
                         // e esperar a reconexão automatica
                         if ( pendingResponse++ > 10 ) {
                             // Não estamos recebendo resposta
@@ -213,7 +219,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         try {
             if ( (curEvent.eventType == lastEventType) && (curEvent.action == lastEventAction) ) {
                 if ( (curEvent.timestamp - lastEventTimestamp) < DROP_SAME_COMMAND_TIME_INTERVAL )  {
-                    Timber.e("@@@ DROP_SAME_COMMAND_TIME_INTERVAL eventType=${curEvent.eventType.toString()} action=${curEvent.action} timestamp=${curEvent.timestamp}")
+                    Timber.w("@@@ DROP_SAME_COMMAND_TIME_INTERVAL eventType=${curEvent.eventType.toString()} action=${curEvent.action} timestamp=${curEvent.timestamp}")
                     return
                 }
             }
@@ -229,9 +235,9 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
 
             // Pacotes não chegavam no Arduino direito
             if ( forcaDelay > 0) {
-                Timber.e("Aguardado delay do pacote ${forcaDelay}")
+                Timber.i("Aguardado delay do pacote ${forcaDelay}")
                 forcaDelay--
-                sleep(200) // ANANA
+                sleep(1000) // ANANA
             }
 
 
@@ -247,7 +253,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
                     Timber.d("TX: $pktStr")
                 }
             }
-            // sleep(50)
         } catch (e: Exception) {
             Timber.d("Exception in send: ${e.message} ")
         }
@@ -335,40 +340,6 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
         }
     }
 
-//    private fun selectDevice(vendorRequired:Int) : UsbDevice? {
-//        var selectedDevice: UsbDevice? = null
-//        val deviceList : HashMap<String, UsbDevice>? = usbManager.deviceList
-//        if ( !deviceList?.isEmpty()!!) {
-//            var device: UsbDevice?
-//            println("Device list size: ${deviceList.size}")
-//            deviceList.forEach { entry ->
-//
-//                device = entry.value
-//                val deviceVendorId: Int = device!!.vendorId
-//                ScreenLog.add(LogType.TO_LOG,"Device localizado. Vendor:" + deviceVendorId.toString() + "  productId: " + device!!.productId + "  Name: " + device!!.productName)
-//                Timber.i("Device Vendor.Id: %d",  deviceVendorId)
-//                if ( (vendorRequired == 0) || (deviceVendorId == vendorRequired) ) {
-//
-//                    if ( ! usbManager.hasPermission(device)) {
-//                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado NAO tem permissao")
-//                        val intent: PendingIntent = PendingIntent.getBroadcast(myContext, 0, Intent(ArduinoDevice.ACTION_USB_PERMISSION), PendingIntent.FLAG_UPDATE_CURRENT)
-//                        usbManager.requestPermission(device, intent)
-//                    } else {
-//                        ScreenLog.add(LogType.TO_LOG,"=============== Device Localizado TEM permissao")
-//                        ScreenLog.add(LogType.TO_LOG,"Device Selecionado")
-//                        Timber.i("Device Selected")
-//                        selectedDevice = device
-//                        return selectedDevice
-//                    }
-//                }
-//            }
-//        } else {
-//            ScreenLog.add(LogType.TO_LOG,"No serial device connected")
-//            Timber.i("No serial device connected")
-//        }
-//        return selectedDevice
-//    }
-
 
     private fun selectDevice() : UsbDevice? {
         val deviceList = usbManager.deviceList
@@ -381,10 +352,7 @@ class ConnectThread(val operation:Int, val usbManager : UsbManager, val mainActi
             val count = device!!.interfaceCount
             for (i in 0 until count) {
                 val intf = device.getInterface(i)
-                mostraNaTela("ZZZ intf.interfaceClass=${intf.interfaceClass}")
                 if ( intf.interfaceClass == android.hardware.usb.UsbConstants.USB_CLASS_COMM  ) {
-                    mostraNaTela("ZZZ vai executar usbManager.requestPermission(device, permissionIntent)")
-//                    usbManager.requestPermission(device, permissionIntent)
                     usbCommDevice = device
                     break
                 }

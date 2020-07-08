@@ -13,7 +13,7 @@ data class Event(
         val OFF = "off"
         val QUESTION = "question"
         val RESET = "reset"
-        var pktNumber: Int = 0
+        var pktNumber: Long = 0L
         val SIMULA5REAIS  = "simula5"
         val SIMULA10REAIS = "simula10"
         val SIMULA20REAIS = "simula20"

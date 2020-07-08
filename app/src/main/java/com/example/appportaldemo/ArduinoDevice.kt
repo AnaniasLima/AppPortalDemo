@@ -5,16 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Handler
-import android.provider.Settings.Global.getString
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.felhr.usbserial.UsbSerialDevice
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
-import java.util.*
 
 
 enum class FunctionType {
@@ -26,7 +22,6 @@ enum class FunctionType {
 @SuppressLint("StaticFieldLeak")
 object ArduinoDevice {
 
-    const val ACTION_USB_PERMISSION = "permission"
     private const val USB_SERIAL_REQUEST_INTERVAL = 30000L
     private const val USB_SERIAL_TIME_TO_CONNECT_INTERVAL = 10000L
 
@@ -35,7 +30,6 @@ object ArduinoDevice {
     var usbManager  : UsbManager? = null
 
     private var usbSerialRequestHandler = Handler()
-    //    private var EVENT_LIST: MutableList<Event> = mutableListOf()
     private var connectThread: ConnectThread? = null
     private var rxLogLevel = 0
     private var txLogLevel = 0
@@ -44,38 +38,49 @@ object ArduinoDevice {
     fun start(activity: AppCompatActivity, context: Context) {
         mainActivity = activity
         appContext = context
-
-        // ArduinoDevice.usbManager = applicationContext.getSystemService(Context.USB_SERVICE) as UsbManager
         usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+
+        val filter = IntentFilter()
+
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+
+        context.registerReceiver(usbEventsReceiver, filter)
 
         usbSerialImediateChecking(200)
     }
 
+    private val usbEventsReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            mostraNaTela("usbEventsReceiver recebendo uma notificacao de: action=${action}")
+
+            if ( UsbManager.ACTION_USB_DEVICE_ATTACHED == action) {
+                ArduinoDevice.connect()
+            }
+
+            if ( UsbManager.ACTION_USB_DEVICE_DETACHED == action) {
+                ArduinoDevice.disconnect()
+            }
+        }
+    }
 
     private fun mostraNaTela(str:String) {
         ScreenLog.add(LogType.TO_LOG, str)
-
-//        (mainActivity as MainActivity).mostraNaTela(str)
     }
 
     private fun mostraEmHistory(str:String) {
         ScreenLog.add(LogType.TO_HISTORY, str)
-
-//        (mainActivity as MainActivity).mostraEmHistory(str)
     }
-
 
     private var usbSerialRunnable = Runnable {
         if ( ! ConnectThread.isConnected ) {
             mostraNaTela("usbSerialRunnable NAO Conectado")
-
             mainActivity?.runOnUiThread {
                 (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.VISIBLE
             }
-
             connect()
         }
-
         usbSerialContinueChecking()
     }
 
@@ -99,10 +104,8 @@ object ArduinoDevice {
     var lastDif = 0
 
     fun onEventResponse(eventResponse: EventResponse) {
-
         val dif = eventResponse.packetNumber.toInt() - eventResponse.numPktResp.toInt()
         if ( dif != lastDif) {
-
             if ( eventResponse.numPktResp.toInt() == 1) {
                 Timber.e("========= Arduino resetou ======")
                 Event.pktNumber = 1
@@ -112,26 +115,19 @@ object ArduinoDevice {
                 lastDif = dif
                 mostraEmHistory("Perdeu ${lastDif} pacotes (${eventResponse.packetNumber})")
             }
-
         }
 
         when ( eventResponse.eventType ) {
-            EventType.FW_EJECT -> {
-                Timber.e("FW_EJECT =====> ${eventResponse.toString()}")
-            }
-            EventType.FW_CONFIG -> {
-                Timber.e("FW_CONFIG =====> ${eventResponse.toString()}")
-            }
             EventType.FW_DEMO,
             EventType.FW_RESTART,
             EventType.FW_STATUS_RQ -> {
                 CleaningMachine.processReceivedResponse(eventResponse)
             }
-            EventType.FW_LED -> {
-//                Timber.e("FW_LED =====> ${eventResponse.toString()}")
-            }
+            EventType.FW_EJECT,
+            EventType.FW_CONFIG,
+            EventType.FW_LED,
             EventType.FW_ALARM -> {
-//                Timber.e("FW_ALARM =====> ${eventResponse.toString()}")
+//                Timber.i("${eventResponse.eventType} =====> ${eventResponse.toString()}")
             }
             else -> {
                 println("===> Falta tratar resposta para comando ${eventResponse.eventType} ")
@@ -155,25 +151,21 @@ object ArduinoDevice {
                 connectThread = ConnectThread(ConnectThread.CONNECT, usbManager!!, mainActivity!!, appContext!!)
                 if (connectThread != null ) {
                     Timber.i("ConnectThread criada com sucesso.")
-                    connectThread!!.priority = Thread.MAX_PRIORITY
                     connectThread!!.start()
 
-                    Thread.sleep(1000) // para esperar a reconfiguração do arduino // ANANA
+                    Thread.sleep(3000) // para esperar a reconfiguração do arduino // TODO_ANANA
 
                     if ( ! CleaningMachine.isStateMachineRunning() ) {
                         if ( CleaningMachine.startStateMachine() ) {
                             mainActivity?.runOnUiThread {
 //                                WaitingMode.enterWaitingMode(VideoFase.WAITING_PEOPLE)
-                                (mainActivity as MainActivity).btnStateMachine.text = "Stop\\nFSM"
+                                (mainActivity as MainActivity).btnStateMachine.text = "Stop\nFSM"
                             }
                         }
                     }
-
                     mainActivity?.runOnUiThread {
                         (mainActivity as MainActivity).btn_aguardando_conexao.visibility = View.GONE
                     }
-
-
                 } else {
                     Timber.e("Falha na criação da thread ")
                 }

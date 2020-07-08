@@ -16,11 +16,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"
-        android:launchMode="singleTask"
         >
         <activity android:name=".MainActivity"
+            android:launchMode="singleInstance"
             android:directBootAware="true"
+            android:screenOrientation="portrait"
             >
+
 
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
@@ -41,8 +43,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
-                <category android:name="android.intent.category.CATEGORY_LAUNCHER_APP" />
             </intent-filter>
+
+<!--            <category android:name="android.intent.category.CATEGORY_LAUNCHER_APP" />-->
+
         </receiver>
 
     </application>

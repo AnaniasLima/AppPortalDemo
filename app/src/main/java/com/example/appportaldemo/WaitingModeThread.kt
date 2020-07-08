@@ -112,7 +112,7 @@ object  WaitingModeThread : Thread() {
         runningFase = fase
         mediasList = medias
 
-        Timber.e("ZZ===============>>>>>>> enterWaitingMode : ${fase} ")
+//        Timber.i("ZZ===============>>>>>>> enterWaitingMode : ${fase} ")
 
         firstItemToPlay = 0
         lastPlayedVideo = 0
@@ -138,7 +138,7 @@ object  WaitingModeThread : Thread() {
     }
 
     fun newLeaveWaitingMode() {
-        Timber.e("ZZ<<<<<<<< =============== VideoFase : ${runningFase} ")
+//        Timber.i("ZZ<<<<<<<< =============== VideoFase : ${runningFase} ")
         cancelFaseTimer()
         myActivity.runOnUiThread {
             stopPlayingSound()

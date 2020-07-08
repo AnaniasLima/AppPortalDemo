@@ -40,7 +40,6 @@ object  ScreenLog {
     private var historyAdapter : HistoryAdapter? = null
     var screenLogHandler = android.os.Handler()
 
-
     var logMainList = ArrayList<String>()
     var historyMainList = ArrayList<String>()
 

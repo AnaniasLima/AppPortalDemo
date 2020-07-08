@@ -1,24 +1,14 @@
-//#include <Servo.h>
 #include <timer.h>
 #include <AccelStepper.h>
-//#include <UltraDistSensor.h>
-
-// https://github.com/contrem/arduino-timer
-
-
 
 
 
 //------ Sensor Ultrason  -----------------------------
-#define PINO_LEITOR_ULTRASON_1_TRIGGER 	53 // 53 // Termometro 2  53 50
-#define PINO_LEITOR_ULTRASON_1_ECHO 	52 // 53 // Termometro 3  52 41
-
+#define PINO_LEITOR_ULTRASON_1_TRIGGER 	53 // Termometro 2
+#define PINO_LEITOR_ULTRASON_1_ECHO 	52 // Termometro 3
 
 #define PINO_LEITOR_ULTRASON_2_TRIGGER 	22 // 39 // Alcool Gel
 #define PINO_LEITOR_ULTRASON_2_ECHO 	40 // 39 // Alcool Gel
-
-
-
 
 
 //------ Bomba de alcool -----------------------------
@@ -40,10 +30,8 @@
 #define LED_B 	9
 
 
-
 //------ Outros  -----------------------------
 //#define LIGA_TABLET       32
-
 //#define PIR_SENSOR 		  ????? // Marcus, não esta sendo utilizado
 
 
@@ -71,8 +59,7 @@
 //-------------------------------------------------
 auto timerManager = timer_create_default(); 
 #define	FREQUENCIA_TIMER_BOMBA			100 // 100ms
-
-#define	FREQUENCIA_LEITURA_ULTRASOM   	50
+#define	FREQUENCIA_LEITURA_ULTRASOM   	50	// Intercalando as leituras dos dois leitores vamos ler um sensor a cada 100ms
 
 int distanciaLidaSensor1, distanciaLidaSensor2;
 int distanciaMediaSensor1, distanciaMediaSensor2;
@@ -190,14 +177,12 @@ void ligaBombaSpray(void)
 //========================================================================================
 
 
-//UltraDistSensor sensorUltrasom_1;
-//UltraDistSensor sensorUltrasom_2;
-//UltraDistSensor sensorUltrasom_3;
 
 #define	STATUS_PRESENTE   1
 #define	STATUS_AUSENTE    0
 
-#define QTD_LEITURAS_CONSECUTIVAS_ULTRASON    2 // Lendo a uma taxa de 100ms perceberá a mudança em 0,5 segundos
+#define QTD_LEITURAS_CONSECUTIVAS_ULTRASON    					2 // Lendo a uma taxa de 100ms perceberá a mudança em 0,5 segundos
+#define	QTD_LEITURAS_CONSECUTIVAS_ULTRASON_PARA_CONFIRMAR_SAIDA  (QTD_LEITURAS_CONSECUTIVAS_ULTRASON + 3)
 
 
 int distanciaPresencaSensor1 = 5;	// em CM
@@ -220,9 +205,7 @@ void fazLeituraUltrasom_3(void);
 bool processaLeitoresUltrasom(void *argument) // optional argument given to in/at/every 
 {	static bool flag=0;
 
-
 	flag = ! flag;	
-
 
 	// TODO: Ver se da problema lendo tudo da mesma vez
 	if ( flag) {
@@ -240,7 +223,7 @@ bool processaLeitoresUltrasom(void *argument) // optional argument given to in/a
 #define AMOSTRAGENS   5
 #define DISTANCIA_LIMITE_SENSOR_1	20
 #define DISTANCIA_LIMITE_SENSOR_2	40
-
+#define	SEM_DISTANCIA_MEDIA			1
 int normalizaDistancia1(int distancia, int distanciaMaxima)
 {
 	static int vetorValores[AMOSTRAGENS+1];
@@ -252,8 +235,10 @@ int normalizaDistancia1(int distancia, int distanciaMaxima)
 	if ( distancia > distanciaMaxima ) {
 		distancia = distanciaMaxima;
 	}
-	
-	if ( descartaAmostras == 0 ) {
+#ifdef SEM_DISTANCIA_MEDIA
+	mediaAmostras = distancia;
+#else	
+	if ( descartaAmostras == 0 ) {	// Só acontece no inicio da execução da rotina (até preencher vetor)
 		vetorValores[indAmostra] = distancia;
 		somaAmostras += distancia;
 		indAmostra++;
@@ -272,7 +257,7 @@ int normalizaDistancia1(int distancia, int distanciaMaxima)
 		indAmostra++;
 		mediaAmostras = somaAmostras / AMOSTRAGENS;
 	}
-
+#endif
 	return(mediaAmostras);
 }
 
@@ -312,14 +297,13 @@ void fazLeituraUltrasom_1(void)
 		} else {
 			contagensAbaixo=0;
 			contagensAcima++;
-			if ( contagensAcima > QTD_LEITURAS_CONSECUTIVAS_ULTRASON  ) {
+			if ( contagensAcima > QTD_LEITURAS_CONSECUTIVAS_ULTRASON_PARA_CONFIRMAR_SAIDA) {
 				statusSensorUltrason_1 = STATUS_AUSENTE;
 			}
 		}
 
 	}		
 }
-
 
 
 int normalizaDistancia2(int distancia, int distanciaMaxima)
@@ -334,6 +318,9 @@ int normalizaDistancia2(int distancia, int distanciaMaxima)
 		distancia = distanciaMaxima;
 	}
 	
+#ifdef SEM_DISTANCIA_MEDIA
+	mediaAmostras = distancia;
+#else	
 	if ( descartaAmostras == 0 ) {
 		vetorValores[indAmostra] = distancia;
 		somaAmostras += distancia;
@@ -353,6 +340,7 @@ int normalizaDistancia2(int distancia, int distanciaMaxima)
 		indAmostra++;
 		mediaAmostras = somaAmostras / AMOSTRAGENS;
 	}
+#endif
 
 	return(mediaAmostras);
 }
@@ -393,7 +381,7 @@ void fazLeituraUltrasom_2(void)
 		} else {
 			contagensAbaixo=0;
 			contagensAcima++;
-			if ( contagensAcima > QTD_LEITURAS_CONSECUTIVAS_ULTRASON ) {
+			if ( contagensAcima > QTD_LEITURAS_CONSECUTIVAS_ULTRASON_PARA_CONFIRMAR_SAIDA ) {
 				statusSensorUltrason_2 = STATUS_AUSENTE;
 			}
 		}
@@ -526,7 +514,7 @@ float readSensorAnalogico(int sensor, int valorRefencia)
 	int valor;
 	//-------- Versão para funcionar em placas COM sensores	
 	if ( sensor == 1 ) {
-		if ( valorRefencia <= 2 ) {
+		if ( valorRefencia <= 3 ) {
 			valor = random(373, 400);	// TODO: AJUSTAR
 		} else {
 			valor = random(360, 372);	// TODO: AJUSTAR
@@ -686,6 +674,7 @@ void loop()
 {
 	timerManager.tick(); // executa rotinas no timer
 
+	// Tratamento da bomba Stepper
 	if ( bombaStepperLigada ) {
 		if (stepper.distanceToGo() != 0) {
 		  stepper.run();
@@ -887,6 +876,7 @@ int trataValoresGenericos(char *valor)
 	return ret;
 }
 
+
 //========================================================================================
 // processaPar - Trata pares de chaves
 //========================================================================================
@@ -1015,6 +1005,7 @@ void processaLinha(void)
 				reinicializando--;
 				strRet = "busy";
 			}
+
 			startResposta("fw_status_rq");
 			addStrResposta("action", "question");
 			addIntResposta("numPktResp", numPktResp);
@@ -1059,7 +1050,6 @@ void processaLinha(void)
 
 		case CMD_PLAY :
 			break;
-
 
 
 		case CMD_LED :

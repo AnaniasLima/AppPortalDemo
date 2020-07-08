@@ -76,7 +76,7 @@
             android:visibility="invisible"
             android:textColor="@color/red"
             android:gravity="center"
-            android:textSize="80dp"
+            android:textSize="60dp"
             android:background="?android:selectableItemBackground"/>
 
 
@@ -199,57 +199,13 @@
             app:layout_constraintStart_toEndOf="@+id/btn_sensor3"
             app:srcCompat="@drawable/cleaning_area_off" />
 
-        <!--  ============================================================ -->
-        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/temperatura_layout"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:textColor="@color/red"
-            android:visibility="visible"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btn_cleaning_area"
-            android:background="@color/fundo">
-
-            <TextView android:id="@+id/temperatura_valor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="35°"
-                android:textColor="@color/blue"
-                android:textSize="12sp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                />
-
-            <SeekBar android:id="@+id/temperatura_seekBar"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:rotation="270"
-                android:enabled="true"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/temperatura_valor"/>
-
-            <TextView android:id="@+id/temperatura_titulo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Temp"
-                android:textColor="@color/blue"
-                android:gravity="center"
-                android:textSize="20sp"
-                android:layout_marginTop="30dp"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
         <Button android:id="@+id/btn_alcohol_dispenser"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:enabled="false"
             android:background="@color/fundo"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/temperatura_layout"
+            app:layout_constraintStart_toEndOf="@+id/btn_cleaning_area"
             app:srcCompat="@drawable/alc_gel_off" />
 
 
@@ -291,27 +247,10 @@
             android:layout_weight="1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            android:textSize="9sp"
             android:text="@string/startStateMachine" />
 
-        <Button android:id="@+id/btnLogTag"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-            android:layout_gravity="left"
-            android:layout_weight="1"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
-            android:text="@string/tag" />
 
-        <Button android:id="@+id/btnLogClear"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-            android:layout_gravity="left"
-            android:layout_weight="1"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
-            android:text="@string/clear" />
 
         <Button android:id="@+id/btnOpenApp"
             android:layout_width="wrap_content"
@@ -321,17 +260,20 @@
             android:layout_weight="1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
+            android:textSize="9sp"
             android:text="@string/openApp" />
 
-        <Button android:id="@+id/btn_modoSuporte"
+        <Button
+            android:id="@+id/btn_modoSuporte"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:visibility="visible"
             android:layout_gravity="left"
             android:layout_weight="1"
-            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="9sp"
+            android:text="@string/modoSuporte"
+            android:visibility="visible"
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
-            android:text="@string/modoSuporte" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button android:id="@+id/btnHidePainel"
             android:layout_width="wrap_content"
@@ -341,7 +283,21 @@
             android:layout_weight="1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
+            android:textSize="9sp"
             android:text="Hide" />
+
+        <Button android:id="@+id/btnShowErros"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:enabled="false"
+            android:layout_gravity="left"
+            android:layout_weight="1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnStateMachine"
+            android:textSize="9sp"
+            android:text="Json=0\nxxx=0" />
+
     </LinearLayout>
 
 

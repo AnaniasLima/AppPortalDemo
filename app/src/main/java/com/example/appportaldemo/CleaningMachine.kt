@@ -161,10 +161,7 @@ object CleaningMachine {
             Sensor.PRESENCA -> if ( sensor1Status > 0 ) return true
             Sensor.ENTRADA ->  if ( sensor2Status > 0) return true
             Sensor.SAIDA ->    if ( sensor3Status > 0) return true
-            Sensor.ALCOHOL ->  if ( sensor4Status > 0) {
-                Timber.e("WWW 002 (pessoaEmSensor) CleaningMachine.sensor4Status esta = ${CleaningMachine.sensor4Status}")
-                return true
-            }
+            Sensor.ALCOHOL ->  if ( sensor4Status > 0) return true
         }
         return false
     }
@@ -197,7 +194,7 @@ object CleaningMachine {
         if ( ConnectThread.isConnected ) {
             stateMachineRunning = true
             desiredState = MachineState.RESTART
-            Timber.e("setei desiredState = ${desiredState} em startStateMachine")
+            Timber.i("setei desiredState = ${desiredState} em startStateMachine")
 
             machineChecking(WAIT_TIME_TO_RESPONSE)
 
@@ -383,7 +380,7 @@ object CleaningMachine {
 
     fun aguardando(state: MachineState, indicadorFundo: Button? = null) {
 
-        Timber.e("aguardando fase: ${state} ")
+        Timber.i("aguardando fase: ${state} ")
 
         if ( state == MachineState.IDLE) {
             WaitingModeThread.newLeaveWaitingMode()
@@ -511,7 +508,7 @@ object CleaningMachine {
     }
 
     fun on_WAITING_ENTER(flag : InOut) {
-        Timber.e("ZZ on_WAITING_ENTER ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_WAITING_ENTER ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 valorFatura =0
@@ -545,7 +542,7 @@ object CleaningMachine {
     }
 
     fun on_CLEANING_PROCESS_1(flag : InOut) {
-        Timber.e("ZZ on_CLEANING_PROCESS_1 ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_CLEANING_PROCESS_1 ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
@@ -622,7 +619,7 @@ object CleaningMachine {
     }
 
     fun on_CLEANING_PROCESS_2(flag : InOut) {
-        Timber.e("ZZ on_CLEANING_PROCESS_2 ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_CLEANING_PROCESS_2 ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
@@ -645,7 +642,7 @@ object CleaningMachine {
     }
 
     fun on_CLEANING_PROCESS_3(flag : InOut) {
-        Timber.e("ZZ on_CLEANING_PROCESS_3 ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_CLEANING_PROCESS_3 ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
@@ -666,7 +663,7 @@ object CleaningMachine {
     }
 
     fun on_WAITING_FINISH(flag : InOut) {
-        Timber.e("ZZ on_WAITING_FINISH ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_WAITING_FINISH ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
@@ -696,7 +693,7 @@ object CleaningMachine {
 
 
     fun on_GRANA_BOLSO(flag : InOut) {
-        Timber.e("ZZ on_GRANA_BOLSO ${flag} desiredState=$desiredState receivedState=$receivedState")
+//        Timber.i("ZZ on_GRANA_BOLSO ${flag} desiredState=$desiredState receivedState=$receivedState")
         when(flag) {
             InOut.IN -> {
                 desiredState = receivedState
@@ -880,7 +877,7 @@ object CleaningMachine {
                 sensor3Status = response.s3
                 sensor4Status = response.s4
 
-                balanca1Status = 1
+                balanca1Status = 1      // TODO_ANANA (ver se uso o valor de config.jso - veja os proximos também)
                 balanca2Status = 1
                 balanca3Status = 1
 //                balanca1Status = response.b1
@@ -921,37 +918,9 @@ object CleaningMachine {
                     }
                 } else {
 
-                    if ( modoManutencaoHabilitado ) {
-                        sensorAnalogico1 = response.f1 / 10F
-                        sensorAnalogico2 = response.f2 / 10F
-
-                        sensor1Status = response.s1
-                        sensor2Status = response.s2
-                        sensor3Status = response.s3
-                        sensor4Status = response.s4
-
-                        balanca1Status = 1
-                        balanca2Status = 1
-                        balanca3Status =1
-//                        balanca1Status = response.b1
-//                        balanca2Status = response.b2
-//                        balanca3Status = response.b3
-
-                        valorOpcional1 = response.o1
-                        valorOpcional2 = response.o2
-                        valorOpcional3 = response.o3
-                        valorOpcional4 = response.o4
-
-                        mainActivity?.runOnUiThread {
-                            (mainActivity as MainActivity).mostraSensores()
-                        }
-                        return
-                    }
-
                     mainActivity?.runOnUiThread {
-                        (mainActivity as MainActivity).ajustaSensores()
+                        (mainActivity as MainActivity).ajustaSensores() // TODO_ANANA melhor sumir deixar só modoManutencaoHabilitado
                     }
-
 
                     sensorAnalogico1 = response.f1 / 10F
                     sensorAnalogico2 = response.f2 / 10F
@@ -1017,7 +986,7 @@ object CleaningMachine {
 
                         MachineState.ALCOHOL_PROCEDURE -> {
                             if ( pessoaEmSensor(Sensor.ALCOHOL) ) {
-                                Timber.e("WWW 005 testou e disse que tem mão no Alcool vai para WAITING_ENTER")
+//                                Timber.i("WWW 005 testou e disse que tem mão no Alcool vai para WAITING_ENTER")
                                 if ( Config.gerenciaEntradaESaida == 0) {
                                     changeCurrentState(MachineState.GRANA_BOLSO, FROM_EXT)
                                 } else {

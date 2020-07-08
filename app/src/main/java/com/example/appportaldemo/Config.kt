@@ -91,8 +91,6 @@ object Config {
     var tempoBomba3 = 0
     var tempoBomba4 = 0
 
-
-
     var alarmeFebre : Int = 0
 
     init {
@@ -111,7 +109,7 @@ object Config {
         var configInputStream : InputStream
 
         path = context.getExternalFilesDir(null)
-        Timber.e( "=========== path=$path")
+//        Timber.i( "=========== path=$path")
 
         val file = File(path, "config.json")
 
@@ -120,9 +118,9 @@ object Config {
         } else {
             path = null
             configInputStream = context.resources.openRawResource(R.raw.config)
-            Timber.e( "Nao Achou arquivo ")
+            Timber.e( "Nao Achou arquivo. Vamos usar R.raw.config")
         }
-        Timber.e( "=========== path=$path    file = ${file}")
+        Timber.i( "=========== path=$path    file = ${file}")
 
         // TODO: Ajustar para pedir permissao para usuário ao invez de habilitar permissao na mão
         if ( ! loadConfig(configInputStream )  ) {
@@ -300,14 +298,10 @@ object Config {
 
                 val file = File(path, mediaName)
 
-                if ( file.isFile  ) {
-                    Timber.e( "Achou arquivo ")
-                } else {
+                if ( ! file.isFile  ) {
                     mainActivity?.runOnUiThread {
                         (mainActivity as MainActivity).erroFatal("Não localizou arquivo $mediaName")
                     }
-
-                    Timber.e( "Nao Achou arquivo ")
                 }
 
                 medias.add( Media(path, mediaName, volume, duracao) )
